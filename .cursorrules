@@ -1,0 +1,29 @@
+# MatchPoint - Project Specification
+
+## 1. Project Overview
+MatchPoint is a matchmaking system that focuses on "Mutual Compatibility". Instead of just checking if a candidate fits the user's requirements, it checks if the candidate fits the user AND the user fits the candidate's preferences, calculating a weighted compatibility score.
+
+## 2. Tech Stack
+- **Frontend:** React (Vite), TypeScript, Tailwind CSS, shadcn/ui.
+- **Backend:** Node.js, Express.
+- **Database:** MongoDB (using Mongoose).
+- **Architecture:** Client-Server. Backend uses Layered Architecture (Routes -> Controllers -> Services -> Data Access).
+
+## 3. Core Entities (MongoDB Schemas)
+- **User:** `_id`, `email`, `passwordHash`, `role` (user/admin), `status`.
+- **Profile:** `userId`, `firstName`, `age`, `city`, `languages`, `education`, `lifestyle`, `description`.
+- **Preferences:** `userId`, `ageRange`, `cities`, `languages`, `education`, `lifestyle`, `additionalCriteria`.
+- **Match:** `userId`, `candidateId`, `score`, `criteriaResults` (to explain the match).
+- **Favorite:** `userId`, `favoriteUserId`.
+
+## 4. Matching Algorithm Rules
+1. **Filtering:** Filter out candidates who don't meet basic requirements (e.g., age range, gender).
+2. **Mutual Check:** Ensure Candidate meets User's preferences AND User meets Candidate's preferences.
+3. **Scoring:** Calculate a weighted score (e.g., Age 20%, Location 15%, Languages 15%, Education 10%, Lifestyle 20%, Preferences 20%).
+4. **Explanation:** Return detailed criteria checks so the user knows *why* there is a match.
+
+## 5. Coding Guidelines for AI
+- Always separate logic: UI components in `client`, API and business logic in `server`.
+- Write clean, modular functions.
+- Add comments explaining complex logic, especially in the matching algorithm.
+- Use functional React components with Hooks.
