@@ -10,8 +10,8 @@ export default {
           soft: '#e7eef8',
         },
         coral: {
-          DEFAULT: '#ff5d78',
-          deep: '#e44562',
+          DEFAULT: '#c4a36a',
+          deep: '#a6844f',
         },
         mist: '#f4f6fb',
       },

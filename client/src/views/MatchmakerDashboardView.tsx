@@ -1,32 +1,38 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, ApiError } from '../lib/api'
+import { useI18n } from '../lib/i18n'
 import type { EngagementCandidate, Session } from '../lib/types'
-import { Field, Notice, SectionTitle, Toast } from '../components/ui'
-
-function candidateLabel(person: EngagementCandidate) {
-  const name = [person.firstName, person.lastName].filter(Boolean).join(' ')
-  return `${name} · ${person.age} · ${person.city}`
-}
+import { PersonPicker } from '../components/PersonPicker'
+import { Notice, SectionTitle, Toast } from '../components/ui'
 
 export function MatchmakerDashboardView({ session }: { session: Session }) {
+  const { tr, message } = useI18n()
   const [people, setPeople] = useState<EngagementCandidate[]>([])
   const [maleId, setMaleId] = useState('')
   const [femaleId, setFemaleId] = useState('')
   const [error, setError] = useState('')
   const [toast, setToast] = useState('')
-  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let active = true
+    setLoading(true)
     api<EngagementCandidate[]>('/api/engagements/candidates', session)
       .then((records) => {
+        if (!active) return
         setPeople(records)
-        const males = records.filter((person) => person.gender === 'Male')
-        const females = records.filter((person) => person.gender === 'Female')
-        setMaleId(males[0]?.userId ?? '')
-        setFemaleId(females[0]?.userId ?? '')
       })
-      .catch((caught) => setError(caught instanceof Error ? caught.message : 'טעינה נכשלה'))
+      .catch((caught) => {
+        if (!active) return
+        setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed'))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [session])
 
   const males = people.filter((person) => person.gender === 'Male')
@@ -36,16 +42,16 @@ export function MatchmakerDashboardView({ session }: { session: Session }) {
     event.preventDefault()
     setBusy(true)
     setError('')
-    setPreviewUrls([])
     try {
-      const result = await api<{ previewUrls?: string[] }>('/api/engagements/request', session, {
+      await api('/api/engagements/request', session, {
         method: 'POST',
         body: JSON.stringify({ maleId, femaleId }),
       })
-      setPreviewUrls(result.previewUrls ?? [])
-      setToast('בקשות האישור נשלחו לשני הצדדים')
+      setToast(tr('בקשות האישור נשלחו לשני הצדדים', 'Approval requests were sent to both sides'))
+      setMaleId('')
+      setFemaleId('')
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'השליחה נכשלה')
+      setError(caught instanceof ApiError ? message(caught.message) : tr('השליחה נכשלה', 'Sending failed'))
     } finally {
       setBusy(false)
     }
@@ -54,40 +60,33 @@ export function MatchmakerDashboardView({ session }: { session: Session }) {
   return (
     <section>
       <SectionTitle
-        kicker="שדכן"
-        title="סגירת שידוך באישור כפול."
-        text="בוחרים בחור ובחורה פנויים. כל אחד מקבל קישור אישי. רק אחרי ששניהם מאשרים השידוך נסגר."
+        kicker={tr('שדכן', 'Matchmaker')}
+        title={tr('סגירת שידוך באישור כפול.', 'Close a match with both approvals.')}
+        text={tr(
+          'בוחרים בחור ובחורה פנויים. כל אחד מקבל קישור אישי. רק אחרי ששניהם מאשרים השידוך נסגר.',
+          'Choose an available man and woman. Each gets a personal link. The match closes only after both approve.',
+        )}
       />
       <form className="panel grid max-w-xl gap-4 rounded-[2rem] p-6" onSubmit={submit}>
-        <Field label="בחור">
-          <select value={maleId} onChange={(event) => setMaleId(event.target.value)} required>
-            {males.length === 0 ? <option value="">אין בחור פנוי</option> : null}
-            {males.map((person) => (
-              <option key={person.userId} value={person.userId}>{candidateLabel(person)}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="בחורה">
-          <select value={femaleId} onChange={(event) => setFemaleId(event.target.value)} required>
-            {females.length === 0 ? <option value="">אין בחורה פנויה</option> : null}
-            {females.map((person) => (
-              <option key={person.userId} value={person.userId}>{candidateLabel(person)}</option>
-            ))}
-          </select>
-        </Field>
+        <PersonPicker
+          label={tr('בחור', 'Man')}
+          people={males}
+          value={maleId}
+          onChange={setMaleId}
+          emptyList={tr('אין בחור פנוי', 'No available man')}
+        />
+        <PersonPicker
+          label={tr('בחורה', 'Woman')}
+          people={females}
+          value={femaleId}
+          onChange={setFemaleId}
+          emptyList={tr('אין בחורה פנויה', 'No available woman')}
+        />
+        {loading ? <p className="text-sm text-slate-500">{tr('טוען את הכלים...', 'Loading the lists...')}</p> : null}
         {error ? <Notice>{error}</Notice> : null}
         <button className="btn btn-primary" disabled={busy || !maleId || !femaleId}>
-          {busy ? 'שולח...' : 'שליחת בקשות אישור'}
+          {busy ? tr('שולח...', 'Sending...') : tr('שליחת בקשות אישור', 'Send approval requests')}
         </button>
-        {previewUrls.length > 0 ? (
-          <div className="grid gap-2 text-sm">
-            {previewUrls.map((url) => (
-              <a key={url} href={url} target="_blank" rel="noreferrer" className="text-[var(--color-wine)]">
-                צפייה במייל שנשלח
-              </a>
-            ))}
-          </div>
-        ) : null}
       </form>
       <Toast message={toast} onDone={() => setToast('')} />
     </section>

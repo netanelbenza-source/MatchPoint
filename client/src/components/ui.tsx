@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useI18n } from '../lib/i18n'
 
 export function Field({
   label,
@@ -8,7 +9,15 @@ export function Field({
   children: ReactNode
 }) {
   return (
-    <label className="field">
+    <label
+      className="field"
+      onMouseDown={(event) => {
+        const target = event.target
+        if (!(target instanceof Element)) return
+        if (target.closest('input, textarea, select')) return
+        event.preventDefault()
+      }}
+    >
       <span>{label}</span>
       {children}
     </label>
@@ -32,6 +41,8 @@ export function Chips({
   value: string[]
   onChange: (next: string[]) => void
 }) {
+  const { label } = useI18n()
+
   function toggle(option: string) {
     onChange(value.includes(option) ? value.filter((item) => item !== option) : [...value, option])
   }
@@ -40,7 +51,7 @@ export function Chips({
     <div className="flex flex-wrap gap-2">
       {options.map((option) => (
         <button key={option} type="button" className="chip" data-on={value.includes(option)} onClick={() => toggle(option)}>
-          {option}
+          {label(option)}
         </button>
       ))}
     </div>

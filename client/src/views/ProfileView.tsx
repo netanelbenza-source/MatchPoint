@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
+import { useI18n } from '../lib/i18n'
 import { EDUCATION, GENDERS, LANGUAGES, LIFESTYLES, SECTORS } from '../lib/options'
 import type { Matchmaker, Profile, Session } from '../lib/types'
 import { Chips, Field, Notice, SectionTitle } from '../components/ui'
@@ -19,6 +20,7 @@ const empty = {
 }
 
 export function ProfileView({ session }: { session: Session }) {
+  const { tr, label, message } = useI18n()
   const navigate = useNavigate()
   const [form, setForm] = useState(empty)
   const [profileId, setProfileId] = useState<string | null>(null)
@@ -50,10 +52,10 @@ export function ProfileView({ session }: { session: Session }) {
         })
       } catch (caught) {
         if (caught instanceof ApiError && caught.status === 404) return
-        if (active) setError(caught instanceof Error ? caught.message : 'טעינת הפרופיל נכשלה')
+        if (active) setError(caught instanceof Error ? message(caught.message) : tr('טעינת הפרופיל נכשלה', 'Could not load the profile'))
       }
     }
-    load().catch((caught) => setError(caught instanceof Error ? caught.message : 'טעינה נכשלה'))
+    load().catch((caught) => setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed')))
     return () => {
       active = false
     }
@@ -78,7 +80,7 @@ export function ProfileView({ session }: { session: Session }) {
       }
       navigate('/preferences')
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'השמירה נכשלה')
+      setError(caught instanceof ApiError ? message(caught.message) : tr('השמירה נכשלה', 'Saving failed'))
     } finally {
       setBusy(false)
     }
@@ -86,64 +88,68 @@ export function ProfileView({ session }: { session: Session }) {
 
   return (
     <section>
-      <SectionTitle kicker="פרופיל" title="מי אתה בשידוך." text="הפרטים האלה נבדקים מול ההעדפות של הצד השני. בלי פרופיל אין התאמה." />
+      <SectionTitle
+        kicker={tr('פרופיל', 'Profile')}
+        title={tr('מי אתה בשידוך.', 'Who you are in a match.')}
+        text={tr('הפרטים האלה נבדקים מול ההעדפות של הצד השני. בלי פרופיל אין התאמה.', 'These details are checked against the other side. Without a profile there is no match.')}
+      />
       <form className="panel grid gap-5 rounded-[2rem] p-6 sm:p-8" onSubmit={save}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="שם פרטי">
+          <Field label={tr('שם פרטי', 'First name')}>
             <input value={form.firstName} onChange={(event) => set('firstName', event.target.value)} required />
           </Field>
-          <Field label="גיל">
+          <Field label={tr('גיל', 'Age')}>
             <input type="number" min={18} max={120} value={form.age} onChange={(event) => set('age', Number(event.target.value))} required />
           </Field>
-          <Field label="עיר">
+          <Field label={tr('עיר', 'City')}>
             <input value={form.city} onChange={(event) => set('city', event.target.value)} required />
           </Field>
-          <Field label="מגדר">
+          <Field label={tr('מגדר', 'Gender')}>
             <select value={form.gender} onChange={(event) => set('gender', event.target.value as 'Male' | 'Female')}>
               {GENDERS.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
+                <option key={item.value} value={item.value}>{label(item.value)}</option>
               ))}
             </select>
           </Field>
-          <Field label="מגזר">
+          <Field label={tr('מגזר', 'Community')}>
             <select value={form.sector} onChange={(event) => set('sector', event.target.value)}>
               {SECTORS.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
-          <Field label="שדכן">
+          <Field label={tr('שדכן', 'Matchmaker')}>
             <select value={form.matchmakerId} onChange={(event) => set('matchmakerId', event.target.value)} required>
-              <option value="">בחירת שדכן</option>
+              <option value="">{tr('בחירת שדכן', 'Choose a matchmaker')}</option>
               {matchmakers.map((maker) => (
-                <option key={maker._id} value={maker._id}>{maker.name}</option>
+                <option key={maker._id} value={maker._id}>{maker.name} · {maker.successfulMatches ?? 0} {tr('שידוכים', 'matches')}</option>
               ))}
             </select>
           </Field>
-          <Field label="מסגרת">
+          <Field label={tr('מסגרת', 'Framework')}>
             <select value={form.education} onChange={(event) => set('education', event.target.value)}>
               {EDUCATION.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
-          <Field label="סדר יום">
+          <Field label={tr('סדר יום', 'Daily schedule')}>
             <select value={form.lifestyle} onChange={(event) => set('lifestyle', event.target.value)}>
               {LIFESTYLES.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
         </div>
-        <Field label="שפות">
+        <Field label={tr('שפות', 'Languages')}>
           <Chips options={LANGUAGES} value={form.languages} onChange={(languages) => set('languages', languages)} />
         </Field>
-        <Field label="תיאור חופשי">
-          <textarea value={form.description} onChange={(event) => set('description', event.target.value)} placeholder="מה חשוב שיידעו לפני שיחה" />
+        <Field label={tr('תיאור חופשי', 'Free description')}>
+          <textarea value={form.description} onChange={(event) => set('description', event.target.value)} placeholder={tr('מה חשוב שיידעו לפני שיחה', 'What should they know before a conversation')} />
         </Field>
-        {matchmakers.length === 0 ? <Notice>עוד אין שדכנים. צור שדכן במסך השדכנים, ואז חזור לכאן.</Notice> : null}
+        {matchmakers.length === 0 ? <Notice>{tr('עוד אין שדכנים. צור שדכן במסך השדכנים, ואז חזור לכאן.', 'There are no matchmakers yet. Create one on the matchmakers screen, then come back.')}</Notice> : null}
         {error ? <Notice>{error}</Notice> : null}
-        <button className="btn btn-primary w-fit" disabled={busy}>{busy ? 'שומר...' : profileId ? 'עדכון פרופיל' : 'יצירת פרופיל'}</button>
+        <button className="btn btn-primary w-fit" disabled={busy}>{busy ? tr('שומר...', 'Saving...') : profileId ? tr('עדכון פרופיל', 'Update profile') : tr('יצירת פרופיל', 'Create profile')}</button>
       </form>
     </section>
   )

@@ -15,6 +15,8 @@ async function insertEngagement({ matchmakerId, maleId, femaleId }) {
     femaleId: toObjectId(femaleId),
     maleApproved: false,
     femaleApproved: false,
+    maleStatus: 'pending',
+    femaleStatus: 'pending',
     status: 'pending',
     createdAt: now,
     updatedAt: now,

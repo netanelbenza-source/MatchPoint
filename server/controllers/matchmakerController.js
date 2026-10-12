@@ -65,6 +65,25 @@ async function updateMatchmaker(req, res) {
   }
 }
 
+async function getTopMatchmakerBySuccess(req, res) {
+  try {
+    const matchmaker = await matchmakerRepo.getTopMatchmaker();
+    if (!matchmaker) return res.status(404).json({ message: 'No matchmaker found' });
+    return res.status(200).json(matchmaker);
+  } catch (error) {
+    return sendWriteError(res, error, 'Email already exists');
+  }
+}
+
+async function resetSuccess(req, res) {
+  try {
+    const modifiedCount = await matchmakerRepo.resetSuccessfulMatches();
+    return res.status(200).json({ message: 'Success counters reset', modifiedCount });
+  } catch (error) {
+    return sendWriteError(res, error, 'Email already exists');
+  }
+}
+
 async function getTopMatchmaker(req, res) {
   try {
     const matchmaker = await matchmakerRepo.getTopMatchmakerOfTheWeek();
@@ -108,5 +127,7 @@ module.exports = {
   updateMatchmaker,
   deleteMatchmaker,
   getTopMatchmaker,
+  getTopMatchmakerBySuccess,
+  resetSuccess,
   recordSuccess,
 };

@@ -38,6 +38,8 @@ function languagesMatch(spoken, preferred) {
 
 function textPreferenceMatches(actual, preferred) {
   if (preferred == null || normalize(preferred) === '') return true;
+  // "ללא מסגרת" means the search has no framework requirement.
+  if (normalize(preferred) === normalize('ללא מסגרת')) return true;
   return normalize(actual) === normalize(preferred);
 }
 
@@ -181,6 +183,7 @@ function findMatches({ userId, profile, preferences, profiles, allPreferences })
               name: candidateProfile.matchmaker.name,
               phone: candidateProfile.matchmaker.phone,
               email: candidateProfile.matchmaker.email,
+              successfulMatches: candidateProfile.matchmaker.successfulMatches ?? 0,
             }
           : null,
       },

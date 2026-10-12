@@ -31,10 +31,15 @@ async function closeDb() {
 
 async function ensureIndexes(database) {
   await database.collection('users').createIndex({ email: 1 }, { unique: true });
+  await database.collection('users').createIndex({ passwordResetToken: 1 }, { unique: true, sparse: true });
+  await database.collection('pendingUsers').createIndex({ email: 1 }, { unique: true });
+  await database.collection('pendingUsers').createIndex({ verificationToken: 1 }, { unique: true });
   await database.collection('profiles').createIndex({ userId: 1 }, { unique: true });
   await database.collection('preferences').createIndex({ userId: 1 }, { unique: true });
   await database.collection('matches').createIndex({ userId: 1, candidateId: 1 }, { unique: true });
   await database.collection('matchmakers').createIndex({ email: 1 }, { unique: true });
+  await database.collection('matchConfirmations').createIndex({ token: 1 }, { unique: true });
+  await database.collection('matchConfirmations').createIndex({ userId: 1, candidateId: 1, matchmakerId: 1, status: 1 });
 }
 
 module.exports = {

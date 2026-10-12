@@ -1,37 +1,37 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { genderLabel } from '../lib/options'
+import { useI18n } from '../lib/i18n'
 import type { PublicUser, Session } from '../lib/types'
 import { Notice, SectionTitle } from '../components/ui'
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'פעיל',
-  inactive: 'לא פעיל',
-  suspended: 'מושעה',
-}
-
 export function PeopleView({ session }: { session: Session }) {
+  const { tr, label, message } = useI18n()
+  const statusLabels: Record<string, string> = {
+    active: tr('פעיל', 'Active'),
+    inactive: tr('לא פעיל', 'Inactive'),
+    suspended: tr('מושעה', 'Suspended'),
+  }
   const [people, setPeople] = useState<PublicUser[]>([])
   const [error, setError] = useState('')
 
   useEffect(() => {
     api<PublicUser[]>('/api/users', session)
       .then(setPeople)
-      .catch((caught) => setError(caught instanceof Error ? caught.message : 'טעינה נכשלה'))
+      .catch((caught) => setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed')))
   }, [session])
 
   return (
     <section>
       <SectionTitle
-        kicker={session.role === 'admin' ? 'ניהול' : 'קהילה'}
-        title={session.role === 'admin' ? 'כל המשתמשים, כולל אימייל.' : 'רשימה ציבורית, בלי פרטי כניסה.'}
-        text="השם מגיע מהפרופיל. מנהל רואה גם אימייל. משתמש רגיל לא רואה אימייל ולא סיסמה."
+        kicker={session.role === 'admin' ? tr('ניהול', 'Admin') : tr('קהילה', 'Community')}
+        title={session.role === 'admin' ? tr('כל המשתמשים, כולל אימייל.', 'Every user, including email.') : tr('רשימה ציבורית, בלי פרטי כניסה.', 'A public list, without login details.')}
+        text={tr('השם מגיע מהפרופיל. מנהל רואה גם אימייל. משתמש רגיל לא רואה אימייל ולא סיסמה.', 'The name comes from the profile. An admin also sees email. A regular user sees neither email nor password.')}
       />
       {error ? <Notice>{error}</Notice> : null}
       <div className="grid gap-3">
         {people.map((person) => {
-          const name = [person.firstName, person.lastName].filter(Boolean).join(' ') || 'משתמש בלי פרופיל'
-          const details = [person.age, person.city, person.sector, person.gender ? genderLabel(person.gender) : '']
+          const name = [person.firstName, person.lastName].filter(Boolean).join(' ') || tr('משתמש בלי פרופיל', 'User without a profile')
+          const details = [person.age, person.city, person.sector ? label(person.sector) : '', person.gender ? label(person.gender) : '']
             .filter(Boolean)
             .join(' · ')
           return (
@@ -39,7 +39,7 @@ export function PeopleView({ session }: { session: Session }) {
               <div>
                 <p className="display text-2xl">{name}</p>
                 <p className="mt-1 text-sm text-[var(--color-muted)]">
-                  {[details, person.role === 'admin' ? 'מנהל' : person.role === 'matchmaker' ? 'שדכן' : 'משתמש', STATUS_LABELS[person.status ?? ''] ?? 'פעיל']
+                  {[details, person.role === 'admin' ? tr('מנהל', 'Admin') : person.role === 'matchmaker' ? tr('שדכן', 'Matchmaker') : tr('משתמש', 'User'), statusLabels[person.status ?? ''] ?? tr('פעיל', 'Active')]
                     .filter(Boolean)
                     .join(' · ')}
                 </p>

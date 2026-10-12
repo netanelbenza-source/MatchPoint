@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
+    allowedHosts: ['slashing-quit-gawk.ngrok-free.dev'],
     proxy: {
       '/api': 'http://localhost:3000',
     },

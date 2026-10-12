@@ -63,6 +63,20 @@ async function incrementWeeklySuccess(matchmakerId) {
   );
 }
 
+async function getTopMatchmaker() {
+  const rows = await matchmakers()
+    .find({})
+    .sort({ successfulMatches: -1 })
+    .limit(1)
+    .toArray();
+  return rows[0] || null;
+}
+
+async function resetSuccessfulMatches() {
+  const result = await matchmakers().updateMany({}, { $set: { successfulMatches: 0 } });
+  return result.modifiedCount;
+}
+
 async function getTopMatchmakerOfTheWeek() {
   const rows = await matchmakers()
     .find({})
@@ -89,6 +103,8 @@ module.exports = {
   deleteMatchmaker,
   incrementSuccessfulMatches,
   incrementWeeklySuccess,
+  getTopMatchmaker,
+  resetSuccessfulMatches,
   getTopMatchmakerOfTheWeek,
   resetWeeklyCounters,
 };

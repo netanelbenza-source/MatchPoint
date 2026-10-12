@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
-import { EDUCATION, GENDERS, LANGUAGES, LIFESTYLES, SECTORS } from '../lib/options'
+import { useI18n } from '../lib/i18n'
+import { educationForSoughtGender, GENDERS, LANGUAGES, lifestyleForSoughtGender, SECTORS } from '../lib/options'
 import type { Preferences, Session } from '../lib/types'
 import { Chips, Field, Notice, SectionTitle } from '../components/ui'
 
@@ -12,11 +13,21 @@ const empty = {
   max: 35,
   cities: '',
   languages: [] as string[],
-  education: EDUCATION[0],
-  lifestyle: LIFESTYLES[0],
+  education: educationForSoughtGender('Female')[0],
+  lifestyle: lifestyleForSoughtGender('Female')[0],
+}
+
+function fitSoughtOptions(gender: 'Male' | 'Female', education: string, lifestyle: string) {
+  const educations = educationForSoughtGender(gender)
+  const lifestyles = lifestyleForSoughtGender(gender)
+  return {
+    education: educations.includes(education) ? education : educations[0],
+    lifestyle: lifestyles.includes(lifestyle) ? lifestyle : lifestyles[0],
+  }
 }
 
 export function PreferencesView({ session }: { session: Session }) {
+  const { tr, label, message } = useI18n()
   const navigate = useNavigate()
   const [form, setForm] = useState(empty)
   const [recordId, setRecordId] = useState<string | null>(null)
@@ -36,13 +47,12 @@ export function PreferencesView({ session }: { session: Session }) {
           max: record.ageRange.max,
           cities: (record.cities ?? []).join(', '),
           languages: record.languages ?? [],
-          education: record.education,
-          lifestyle: record.lifestyle,
+          ...fitSoughtOptions(record.gender, record.education, record.lifestyle),
         })
       })
       .catch((caught) => {
         if (caught instanceof ApiError && caught.status === 404) return
-        if (active) setError(caught instanceof Error ? caught.message : 'טעינה נכשלה')
+        if (active) setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed'))
       })
     return () => {
       active = false
@@ -75,7 +85,7 @@ export function PreferencesView({ session }: { session: Session }) {
       }
       navigate('/matches')
     } catch (caught) {
-      setError(caught instanceof ApiError ? caught.message : 'השמירה נכשלה')
+      setError(caught instanceof ApiError ? message(caught.message) : tr('השמירה נכשלה', 'Saving failed'))
     } finally {
       setBusy(false)
     }
@@ -83,52 +93,62 @@ export function PreferencesView({ session }: { session: Session }) {
 
   return (
     <section>
-      <SectionTitle kicker="העדפות" title="את מי אתה מחפש." text="מגדר הפוך ומגזר נבדקים לפני הציון. אחר פותח את כל המגזרים." />
+      <SectionTitle
+        kicker={tr('חיפוש', 'Search')}
+        title={tr('את מי אתה מחפש.', 'Who are you looking for.')}
+        text={tr('מגדר הפוך ומגזר נבדקים לפני הציון. אחר פותח את כל המגזרים.', 'Opposite gender and community are checked before the score. Other opens every community.')}
+      />
       <form className="panel grid gap-5 rounded-[2rem] p-6 sm:p-8" onSubmit={save}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="מגדר מבוקש">
-            <select value={form.gender} onChange={(event) => setForm({ ...form, gender: event.target.value as 'Male' | 'Female' })}>
+          <Field label={tr('מגדר מבוקש', 'Requested gender')}>
+            <select
+              value={form.gender}
+              onChange={(event) => {
+                const gender = event.target.value as 'Male' | 'Female'
+                setForm({ ...form, gender, ...fitSoughtOptions(gender, form.education, form.lifestyle) })
+              }}
+            >
               {GENDERS.map((item) => (
-                <option key={item.value} value={item.value}>{item.label}</option>
+                <option key={item.value} value={item.value}>{label(item.value)}</option>
               ))}
             </select>
           </Field>
-          <Field label="מגזר מבוקש">
+          <Field label={tr('מגזר מבוקש', 'Requested community')}>
             <select value={form.sector} onChange={(event) => setForm({ ...form, sector: event.target.value })}>
               {SECTORS.map((item) => (
-                <option key={item}>{item}</option>
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
-          <Field label="גיל מינימום">
+          <Field label={tr('גיל מינימום', 'Minimum age')}>
             <input type="number" min={18} max={120} value={form.min} onChange={(event) => setForm({ ...form, min: Number(event.target.value) })} />
           </Field>
-          <Field label="גיל מקסימום">
+          <Field label={tr('גיל מקסימום', 'Maximum age')}>
             <input type="number" min={18} max={120} value={form.max} onChange={(event) => setForm({ ...form, max: Number(event.target.value) })} />
           </Field>
-          <Field label="מסגרת">
+          <Field label={tr('מסגרת', 'Framework')}>
             <select value={form.education} onChange={(event) => setForm({ ...form, education: event.target.value })}>
-              {EDUCATION.map((item) => (
-                <option key={item}>{item}</option>
+              {educationForSoughtGender(form.gender).map((item) => (
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
-          <Field label="סדר יום">
+          <Field label={tr('סדר יום', 'Daily schedule')}>
             <select value={form.lifestyle} onChange={(event) => setForm({ ...form, lifestyle: event.target.value })}>
-              {LIFESTYLES.map((item) => (
-                <option key={item}>{item}</option>
+              {lifestyleForSoughtGender(form.gender).map((item) => (
+                <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
         </div>
-        <Field label="ערים, מופרדות בפסיק">
-          <input value={form.cities} onChange={(event) => setForm({ ...form, cities: event.target.value })} placeholder="ירושלים, בני ברק" />
+        <Field label={tr('ערים, מופרדות בפסיק', 'Cities, separated by commas')}>
+          <input value={form.cities} onChange={(event) => setForm({ ...form, cities: event.target.value })} placeholder={tr('ירושלים, בני ברק', 'Jerusalem, Bnei Brak')} />
         </Field>
-        <Field label="שפות">
+        <Field label={tr('שפות', 'Languages')}>
           <Chips options={LANGUAGES} value={form.languages} onChange={(languages) => setForm({ ...form, languages })} />
         </Field>
         {error ? <Notice>{error}</Notice> : null}
-        <button className="btn btn-primary w-fit" disabled={busy}>{busy ? 'שומר...' : recordId ? 'עדכון העדפות' : 'שמירת העדפות'}</button>
+        <button className="btn btn-primary w-fit" disabled={busy}>{busy ? tr('שומר...', 'Saving...') : recordId ? tr('עדכון חיפוש', 'Update search') : tr('שמירת חיפוש', 'Save search')}</button>
       </form>
     </section>
   )

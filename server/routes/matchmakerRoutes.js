@@ -7,11 +7,15 @@ const {
   updateMatchmaker,
   deleteMatchmaker,
   getTopMatchmaker,
+  getTopMatchmakerBySuccess,
+  resetSuccess,
   recordSuccess,
 } = require('../controllers/matchmakerController');
 
 const router = express.Router();
 
+router.get('/top', getTopMatchmakerBySuccess);
+router.post('/reset-success', resetSuccess);
 router.use(authMiddleware);
 router.post('/', createMatchmaker);
 router.get('/', getMatchmakers);

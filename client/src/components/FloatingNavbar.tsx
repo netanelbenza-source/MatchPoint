@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { LogOut, Menu, X } from 'lucide-react'
+import { useI18n } from '../lib/i18n'
 import { cn } from '../lib/utils'
+import { LanguageToggle } from './LanguageToggle'
 
 export type NavItem = {
   to: string
@@ -14,7 +16,7 @@ export function Brand({ large = false }: { large?: boolean }) {
     <span className={cn('flex items-center font-black tracking-tight text-navy', large ? 'gap-3 text-4xl' : 'gap-3 text-[1.65rem]')}>
       <svg width={large ? 44 : 36} height={large ? 28 : 22} viewBox="0 0 28 18" aria-hidden="true">
         <path d="M2 12c4-7 8-7 12 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-        <path d="M14 12c4-7 8-7 12 0" fill="none" stroke="#ff5d78" strokeWidth="2.2" strokeLinecap="round" />
+        <path d="M14 12c4-7 8-7 12 0" fill="none" stroke="#c4a36a" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
       MatchPoint
     </span>
@@ -32,6 +34,7 @@ export function FloatingNavbar({
   onToggleAvailability: () => void
   onLogout: () => void
 }) {
+  const { tr } = useI18n()
   const [open, setOpen] = useState(false)
 
   return (
@@ -63,17 +66,18 @@ export function FloatingNavbar({
           <div className="flex items-center gap-2">
             {available !== null ? (
               <button type="button" className="btn btn-ghost hidden px-4 py-2 text-sm sm:inline-flex" onClick={onToggleAvailability}>
-                {available ? 'פנוי' : 'לא פנוי'}
+                {available ? tr('פנוי', 'Available') : tr('לא פנוי', 'Unavailable')}
               </button>
             ) : null}
             <button type="button" className="btn btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm" onClick={onLogout}>
               <LogOut size={16} />
-              יציאה
+              {tr('יציאה', 'Log out')}
             </button>
+            <LanguageToggle className="px-3" />
             <button
               type="button"
               className="icon-btn lg:hidden"
-              aria-label={open ? 'סגירת תפריט' : 'פתיחת תפריט'}
+              aria-label={open ? tr('סגירת תפריט', 'Close menu') : tr('פתיחת תפריט', 'Open menu')}
               onClick={() => setOpen((value) => !value)}
             >
               {open ? <X size={18} /> : <Menu size={18} />}

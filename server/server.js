@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const { connectDb } = require('./db');
+const { verifyMailTransport } = require('./services/mailService');
 const { startWeeklyReset } = require('./jobs/weeklyReset');
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -19,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 
 function isAllowedOrigin(origin) {
   if (!origin) return true;
+  if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) return true;
   if (process.env.CLIENT_ORIGIN && origin === process.env.CLIENT_ORIGIN) return true;
   try {
     const { hostname } = new URL(origin);
@@ -47,6 +49,7 @@ app.use('/api/engagements', engagementRoutes);
 
 async function start() {
   await connectDb();
+  await verifyMailTransport();
   startWeeklyReset();
   app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);

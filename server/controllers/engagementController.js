@@ -14,12 +14,9 @@ const {
 const { sendEngagementApprovalEmail } = require('../services/mailService');
 const { sendValidationError, sendWriteError } = require('./errors');
 
-function clientOrigin() {
-  return process.env.CLIENT_ORIGIN || 'http://localhost:5173';
-}
-
 function approvalUrl(engagementId, userId) {
-  return `${clientOrigin()}/approve-engagement/${engagementId}/${userId}`;
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+  return `${clientUrl}/approve-engagement/${engagementId}/${userId}`;
 }
 
 function presentEngagement(record) {
@@ -30,6 +27,8 @@ function presentEngagement(record) {
     femaleId: String(record.femaleId),
     maleApproved: record.maleApproved === true,
     femaleApproved: record.femaleApproved === true,
+    maleStatus: record.maleStatus || 'pending',
+    femaleStatus: record.femaleStatus || 'pending',
     status: record.status,
   };
 }
@@ -94,31 +93,34 @@ async function requestEngagement(req, res) {
       femaleId: parsed.data.femaleId,
     });
 
-    let maleMail;
-    let femaleMail;
+    const maleApprovalUrl = approvalUrl(engagement._id, maleUser._id);
+    const femaleApprovalUrl = approvalUrl(engagement._id, femaleUser._id);
+    if (maleApprovalUrl === femaleApprovalUrl) {
+      await deleteEngagement(engagement._id);
+      return res.status(500).json({ message: 'לא נוצרו שני קישורי אישור נפרדים' });
+    }
+
     try {
-      [maleMail, femaleMail] = await Promise.all([
-        sendEngagementApprovalEmail({
-          to: maleUser.email,
-          firstName: maleProfile.firstName,
-          matchmakerName: matchmaker.name,
-          approvalUrl: approvalUrl(engagement._id, maleUser._id),
-        }),
-        sendEngagementApprovalEmail({
-          to: femaleUser.email,
-          firstName: femaleProfile.firstName,
-          matchmakerName: matchmaker.name,
-          approvalUrl: approvalUrl(engagement._id, femaleUser._id),
-        }),
-      ]);
+      await sendEngagementApprovalEmail({
+        to: maleUser.email,
+        firstName: maleProfile.firstName,
+        matchmakerName: matchmaker.name,
+        approvalUrl: maleApprovalUrl,
+      });
+      await sendEngagementApprovalEmail({
+        to: femaleUser.email,
+        firstName: femaleProfile.firstName,
+        matchmakerName: matchmaker.name,
+        approvalUrl: femaleApprovalUrl,
+      });
     } catch (error) {
       await deleteEngagement(engagement._id);
       throw error;
     }
 
     return res.status(201).json({
+      emailsSent: 2,
       engagement: presentEngagement(engagement),
-      previewUrls: [maleMail.previewUrl, femaleMail.previewUrl].filter(Boolean),
     });
   } catch (error) {
     if (error && error.statusCode) {
@@ -184,7 +186,7 @@ async function approveEngagement(req, res) {
 
     const latest = await getEngagementById(updated._id);
     return res.status(200).json({
-      message: closed ? 'שני הצדדים אישרו. השידוך נסגר.' : 'האישור נקלט. מחכים לצד השני.',
+        message: closed ? 'שני הצדדים אישרו. השידוך נסגר.' : 'מחכים לאישור הצד השני.',
       closed,
       engagement: latest ? presentEngagement(latest) : presentEngagement(updated),
     });

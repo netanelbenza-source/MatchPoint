@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { api, ApiError } from '../lib/api'
+import { useI18n } from '../lib/i18n'
 import type { AiMatch, Session } from '../lib/types'
 import { Notice, SectionTitle } from '../components/ui'
 
 export function ChatView({ session }: { session: Session }) {
+  const { tr, message } = useI18n()
   const [chatMessage, setChatMessage] = useState('')
   const [matches, setMatches] = useState<AiMatch[]>([])
   const [error, setError] = useState('')
@@ -23,7 +25,7 @@ export function ChatView({ session }: { session: Session }) {
       setMatches(result.matches)
     } catch (caught) {
       setMatches([])
-      setError(caught instanceof ApiError ? caught.message : 'העוזר לא זמין')
+      setError(caught instanceof ApiError ? message(caught.message) : tr('העוזר לא זמין', 'The assistant is unavailable'))
     } finally {
       setBusy(false)
     }
@@ -31,20 +33,24 @@ export function ChatView({ session }: { session: Session }) {
 
   return (
     <section>
-      <SectionTitle kicker="עוזר" title="תאר במילים, לא בתיבות." text="המערכת כבר מסננת מגדר, מגזר וזמינות. ג׳מיני קורא רק את התיאורים החופשיים ומחזיר עד שלוש התאמות." />
+      <SectionTitle
+        kicker={tr('עוזר', 'Assistant')}
+        title={tr('תאר במילים, לא בתיבות.', 'Describe it in words, not boxes.')}
+        text={tr('המערכת כבר מסננת מגדר, מגזר וזמינות. ג׳מיני קורא רק את התיאורים החופשיים ומחזיר עד שלוש התאמות.', 'The system already filters gender, community, and availability. Gemini reads only the free descriptions and returns up to three matches.')}
+      />
       <form className="panel rounded-[2rem] p-6 sm:p-8" onSubmit={submit}>
         <textarea
           className="min-h-36 w-full resize-y rounded-3xl border border-[var(--color-line)] bg-white p-4 outline-none focus:border-[var(--color-gold)]"
           value={chatMessage}
           onChange={(event) => setChatMessage(event.target.value)}
-          placeholder="למשל: מישהי רגועה, לומדת, ופתוחה לגור מחוץ למרכז"
+          placeholder={tr('למשל: מישהי רגועה, לומדת, ופתוחה לגור מחוץ למרכז', 'For example: someone calm, studying, and open to living outside the center')}
           required
         />
-        <button className="btn btn-primary mt-4" disabled={busy}>{busy ? 'קורא תיאורים...' : 'חיפוש לפי השיחה'}</button>
+        <button className="btn btn-primary mt-4" disabled={busy}>{busy ? tr('קורא תיאורים...', 'Reading descriptions...') : tr('חיפוש לפי השיחה', 'Search from the conversation')}</button>
       </form>
       {error ? <div className="mt-5"><Notice>{error}</Notice></div> : null}
       {asked && !busy && !error && matches.length === 0 ? (
-        <p className="page-copy mt-6 w-fit text-ink">אין תיאור שיושב על הבקשה, או שאין מועמדים אחרי הסינון.</p>
+        <p className="page-copy mt-6 w-fit text-ink">{tr('אין תיאור שיושב על הבקשה, או שאין מועמדים אחרי הסינון.', 'No description fits the request, or no candidates remain after filtering.')}</p>
       ) : null}
       <div className="mt-6 grid gap-4">
         {matches.map((match) => (

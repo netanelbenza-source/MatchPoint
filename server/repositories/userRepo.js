@@ -14,6 +14,7 @@ async function insertUser(user) {
     passwordHash: user.passwordHash,
     role: user.role,
     status: user.status,
+    isVerified: user.isVerified !== false,
     createdAt: now,
     updatedAt: now,
   };
@@ -24,14 +25,14 @@ async function insertUser(user) {
 async function getUserById(id) {
   return users().findOne(
     { _id: toObjectId(id) },
-    { projection: { passwordHash: 0 } }
+    { projection: { passwordHash: 0, verificationToken: 0, passwordResetToken: 0 } }
   );
 }
 
 async function getUserByEmail(email) {
   return users().findOne(
     { email },
-    { projection: { passwordHash: 0 } }
+    { projection: { passwordHash: 0, passwordResetToken: 0 } }
   );
 }
 
@@ -43,7 +44,25 @@ async function updateUser(id, changes) {
   return users().findOneAndUpdate(
     { _id: toObjectId(id) },
     { $set: { ...changes, updatedAt: new Date() } },
-    { returnDocument: 'after', projection: { passwordHash: 0 } }
+    { returnDocument: 'after', projection: { passwordHash: 0, verificationToken: 0, passwordResetToken: 0 } }
+  );
+}
+
+async function setPasswordReset(id, tokenHash, expiresAt) {
+  await users().updateOne(
+    { _id: toObjectId(id) },
+    { $set: { passwordResetToken: tokenHash, passwordResetExpires: expiresAt, updatedAt: new Date() } }
+  );
+}
+
+async function resetPasswordWithToken(tokenHash, passwordHash) {
+  return users().findOneAndUpdate(
+    { passwordResetToken: tokenHash, passwordResetExpires: { $gt: new Date() } },
+    {
+      $set: { passwordHash, updatedAt: new Date() },
+      $unset: { passwordResetToken: '', passwordResetExpires: '' },
+    },
+    { returnDocument: 'after', projection: { passwordHash: 0, passwordResetToken: 0 } }
   );
 }
 
@@ -53,7 +72,9 @@ async function deleteUser(id) {
 }
 
 function usersWithProfile(includeEmail) {
-  const hidden = includeEmail ? { passwordHash: 0 } : { email: 0, passwordHash: 0 };
+  const hidden = includeEmail
+    ? { passwordHash: 0, passwordResetToken: 0, verificationToken: 0 }
+    : { email: 0, passwordHash: 0, passwordResetToken: 0, verificationToken: 0 };
   const visible = {
     role: 1,
     status: 1,
@@ -95,6 +116,8 @@ module.exports = {
   getUserByEmail,
   getUserByEmailWithPassword,
   updateUser,
+  setPasswordReset,
+  resetPasswordWithToken,
   deleteUser,
   getAllUsers,
   getPublicUsers,
