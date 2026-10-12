@@ -23,6 +23,7 @@ export function MatchCard({
   const { tr, label, message } = useI18n()
   const [sending, setSending] = useState(false)
   const profile = match.profile
+  const unavailable = profile?.isAvailable === false
 
   async function contact() {
     setSending(true)
@@ -44,7 +45,7 @@ export function MatchCard({
     <motion.article
       whileHover={{ scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 260, damping: 22 }}
-      className="panel grid gap-6 rounded-[2rem] p-6 md:grid-cols-[8.5rem_1fr]"
+      className={unavailable ? 'panel card-unavailable grid gap-6 rounded-[2rem] p-6 md:grid-cols-[8.5rem_1fr]' : 'panel grid gap-6 rounded-[2rem] p-6 md:grid-cols-[8.5rem_1fr]'}
     >
       <div className="flex h-28 w-28 items-center justify-center rounded-[1.75rem] bg-navy text-white shadow-card">
         <div>

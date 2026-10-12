@@ -214,6 +214,13 @@ textarea {
   background: var(--color-navy-soft);
 }
 
+.card-unavailable {
+  filter: blur(3px);
+  opacity: 0.8;
+  pointer-events: none;
+  user-select: none;
+}
+
 .field input:focus,
 .field select:focus,
 .field textarea:focus {

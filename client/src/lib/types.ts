@@ -69,6 +69,7 @@ export type MatchRecord = {
     education: string
     lifestyle: string
     description: string
+    isAvailable?: boolean
     matchmaker?: Matchmaker | null
   } | null
 }

@@ -116,9 +116,6 @@ function findMatches({ userId, profile, preferences, profiles, allPreferences })
     const candidateId = String(candidateProfile.userId);
     if (candidateId === userKey) continue;
 
-    // Busy candidates are removed before gender, sector, or score checks.
-    if (candidateProfile.isAvailable !== true) continue;
-
     const candidatePreferences = preferencesByUserId.get(candidateId);
     // Mutual scoring needs both a profile and preferences for the candidate.
     if (!candidatePreferences) continue;
@@ -177,6 +174,7 @@ function findMatches({ userId, profile, preferences, profiles, allPreferences })
         education: candidateProfile.education,
         lifestyle: candidateProfile.lifestyle,
         description: candidateProfile.description,
+        isAvailable: candidateProfile.isAvailable === true,
         matchmaker: candidateProfile.matchmaker
           ? {
               _id: candidateProfile.matchmaker._id,

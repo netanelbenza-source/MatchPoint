@@ -2,9 +2,18 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { EDUCATION, GENDERS, LANGUAGES, LIFESTYLES, SECTORS } from '../lib/options'
+import { educationForProfileGender, GENDERS, LANGUAGES, lifestyleForProfileGender, SECTORS } from '../lib/options'
 import type { Matchmaker, Profile, Session } from '../lib/types'
 import { Chips, Field, Notice, SectionTitle } from '../components/ui'
+
+function fitProfileOptions(gender: 'Male' | 'Female', education: string, lifestyle: string) {
+  const educations = educationForProfileGender(gender)
+  const lifestyles = lifestyleForProfileGender(gender)
+  return {
+    education: educations.includes(education) ? education : educations[0],
+    lifestyle: lifestyles.includes(lifestyle) ? lifestyle : lifestyles[0],
+  }
+}
 
 const empty = {
   firstName: '',
@@ -14,8 +23,8 @@ const empty = {
   sector: SECTORS[0],
   matchmakerId: '',
   languages: [] as string[],
-  education: EDUCATION[0],
-  lifestyle: LIFESTYLES[0],
+  education: educationForProfileGender('Male')[0],
+  lifestyle: lifestyleForProfileGender('Male')[0],
   description: '',
 }
 
@@ -46,8 +55,7 @@ export function ProfileView({ session }: { session: Session }) {
           sector: profile.sector,
           matchmakerId: profile.matchmakerId,
           languages: profile.languages ?? [],
-          education: profile.education,
-          lifestyle: profile.lifestyle,
+          ...fitProfileOptions(profile.gender, profile.education, profile.lifestyle),
           description: profile.description ?? '',
         })
       } catch (caught) {
@@ -105,7 +113,13 @@ export function ProfileView({ session }: { session: Session }) {
             <input value={form.city} onChange={(event) => set('city', event.target.value)} required />
           </Field>
           <Field label={tr('מגדר', 'Gender')}>
-            <select value={form.gender} onChange={(event) => set('gender', event.target.value as 'Male' | 'Female')}>
+            <select
+              value={form.gender}
+              onChange={(event) => {
+                const gender = event.target.value as 'Male' | 'Female'
+                setForm((current) => ({ ...current, gender, ...fitProfileOptions(gender, current.education, current.lifestyle) }))
+              }}
+            >
               {GENDERS.map((item) => (
                 <option key={item.value} value={item.value}>{label(item.value)}</option>
               ))}
@@ -128,14 +142,14 @@ export function ProfileView({ session }: { session: Session }) {
           </Field>
           <Field label={tr('מסגרת', 'Framework')}>
             <select value={form.education} onChange={(event) => set('education', event.target.value)}>
-              {EDUCATION.map((item) => (
+              {educationForProfileGender(form.gender).map((item) => (
                 <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>
           </Field>
           <Field label={tr('סדר יום', 'Daily schedule')}>
             <select value={form.lifestyle} onChange={(event) => set('lifestyle', event.target.value)}>
-              {LIFESTYLES.map((item) => (
+              {lifestyleForProfileGender(form.gender).map((item) => (
                 <option key={item} value={item}>{label(item)}</option>
               ))}
             </select>

@@ -16,6 +16,15 @@ export function educationForSoughtGender(gender: 'Male' | 'Female') {
 export function lifestyleForSoughtGender(gender: 'Male' | 'Female') {
   return gender === 'Female' ? ['לימוד ועבודה', 'עבודה'] : [...LIFESTYLES]
 }
+
+export function educationForProfileGender(gender: 'Male' | 'Female') {
+  if (gender === 'Female') return ['סמינר', 'הכשרה מקצועית', 'לימודים אקדמאים', NO_FRAMEWORK]
+  return ['ישיבה', 'כולל', 'הכשרה מקצועית', 'לימודים אקדמאים', NO_FRAMEWORK]
+}
+
+export function lifestyleForProfileGender(gender: 'Male' | 'Female') {
+  return gender === 'Female' ? ['לימוד ועבודה', 'עבודה'] : [...LIFESTYLES]
+}
 export const LANGUAGES = ['אנגלית', 'ספרדית', 'צרפתית', 'עברית', 'רוסית', 'אחר']
 
 export const CRITERIA: Record<string, string> = {

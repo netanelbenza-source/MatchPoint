@@ -49,7 +49,7 @@ export function MatchesView({ session }: { session: Session }) {
         <SectionTitle
           kicker={tr('התאמות', 'Matches')}
           title={tr('האחוז הוא רק ההתחלה.', 'The percentage is only the start.')}
-          text={tr('כל ציון מפורק לקריטריונים. מי שלא פנוי, לא באותו מגדר ההפוך, או מחוץ למגזר, לא נכנס לחישוב.', 'Every score is broken into criteria. Anyone unavailable, not the opposite gender, or outside the community is left out.')}
+          text={tr('כל ציון מפורק לקריטריונים. מי שלא פנוי נשאר בכרטיס מטושטש. מי שלא באותו מגדר ההפוך, או מחוץ למגזר, לא נכנס לחישוב.', 'Every score is broken into criteria. Someone who is unavailable stays on a blurred card. Anyone who is not the opposite gender, or outside the community, is left out.')}
         />
       </motion.div>
       <Toast message={toast} onDone={() => setToast('')} />

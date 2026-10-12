@@ -65,7 +65,7 @@ export function FloatingNavbar({
           </div>
           <div className="flex items-center gap-2">
             {available !== null ? (
-              <button type="button" className="btn btn-ghost hidden px-4 py-2 text-sm sm:inline-flex" onClick={onToggleAvailability}>
+              <button type="button" className="btn btn-ghost inline-flex shrink-0 px-3 py-2 text-sm" onClick={onToggleAvailability}>
                 {available ? tr('פנוי', 'Available') : tr('לא פנוי', 'Unavailable')}
               </button>
             ) : null}
@@ -86,6 +86,11 @@ export function FloatingNavbar({
         </div>
         {open ? (
           <div className="mt-2 grid gap-1 border-t border-navy/10 pt-2 lg:hidden">
+            {available !== null ? (
+              <button type="button" className="rounded-full px-4 py-2 text-start text-sm font-bold text-navy" onClick={onToggleAvailability}>
+                {available ? tr('פנוי', 'Available') : tr('לא פנוי', 'Unavailable')}
+              </button>
+            ) : null}
             {items.map((item) => (
               <NavLink
                 key={item.to}
