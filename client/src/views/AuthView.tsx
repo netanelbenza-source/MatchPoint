@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { api, ApiError, readSession } from '../lib/api'
 import type { Session } from '../lib/types'
@@ -12,6 +13,7 @@ import { cn } from '../lib/utils'
 
 export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
   const { tr, message } = useI18n()
+  const location = useLocation()
   const [mode, setMode] = useState<'login' | 'register' | 'forgot' | 'code'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,6 +21,11 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    const requested = (location.state as { mode?: string } | null)?.mode
+    if (requested === 'register') setMode('register')
+  }, [location.state])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -73,6 +80,9 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
           <Brand large />
           <div className="flex items-center gap-2">
             <LanguageToggle />
+            <Link to="/about" className="rounded-full px-4 py-2 text-sm font-bold text-navy">
+              {tr('אודותינו', 'About us')}
+            </Link>
             <button
               type="button"
               className={cn('rounded-full px-4 py-2 text-sm font-bold', mode === 'register' ? 'bg-navy text-white' : 'text-navy')}

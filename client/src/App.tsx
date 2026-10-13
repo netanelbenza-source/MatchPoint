@@ -4,6 +4,7 @@ import { api, readSession } from './lib/api'
 import { useI18n } from './lib/i18n'
 import type { Profile, Session } from './lib/types'
 import { AppShell } from './components/AppShell'
+import { AboutView } from './views/AboutView'
 import { ApproveEngagement } from './views/ApproveEngagementView'
 import { AuthView } from './views/AuthView'
 import { ChatView } from './views/ChatView'
@@ -20,6 +21,7 @@ import { VerifyEmail } from './views/VerifyEmail'
 function useNav() {
   const { tr } = useI18n()
   return [
+    { to: '/about', label: tr('אודותינו', 'About us') },
     { to: '/matches', label: tr('התאמות', 'Matches') },
     { to: '/favorites', label: tr('מועדפים', 'Favorites') },
     { to: '/profile', label: tr('פרופיל', 'Profile') },
@@ -32,7 +34,7 @@ function useNav() {
 }
 
 function MatchmakerRoute({ role, children }: { role: Session['role']; children: ReactNode }) {
-  if (role !== 'matchmaker') return <Navigate to="/matches" replace />
+  if (role !== 'matchmaker') return <Navigate to="/profile" replace />
   return children
 }
 
@@ -83,7 +85,7 @@ export default function App() {
   function enter(next: Session) {
     localStorage.setItem(STORAGE_KEY, next.token)
     setSession(next)
-    navigate(next.role === 'matchmaker' ? '/matchmaker-dashboard' : '/matches', { replace: true })
+    navigate(next.role === 'matchmaker' ? '/matchmaker-dashboard' : '/profile', { replace: true })
   }
 
   function replaceSession(next: Session) {
@@ -113,7 +115,8 @@ export default function App() {
       <Route path="/verify-email/:token" element={<VerifyEmail />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       {session ? <>
-      <Route path="/" element={<Navigate to={session.role === 'matchmaker' ? '/matchmaker-dashboard' : '/matches'} replace />} />
+      <Route path="/" element={<Navigate to={session.role === 'matchmaker' ? '/matchmaker-dashboard' : '/profile'} replace />} />
+      <Route path="/about" element={<AboutView />} />
       <Route path="/matches" element={<MatchesView session={session} />} />
       <Route path="/favorites" element={<FavoritesView session={session} />} />
       <Route path="/profile" element={<ProfileView session={session} />} />
@@ -123,11 +126,12 @@ export default function App() {
       <Route path="/people" element={<PeopleView session={session} />} />
       <Route path="/matchmaker" element={<Navigate to="/matchmaker-dashboard" replace />} />
       <Route path="/matchmaker-dashboard" element={<MatchmakerRoute role={session.role}><MatchmakerDashboardView key={session.token} session={session} /></MatchmakerRoute>} />
-      <Route path="*" element={<Navigate to={session.role === 'matchmaker' ? '/matchmaker-dashboard' : '/matches'} replace />} />
+      <Route path="*" element={<Navigate to={session.role === 'matchmaker' ? '/matchmaker-dashboard' : '/profile'} replace />} />
       </> : null}
     </Routes>
   )
 
+  if (!session && !approvalPath && !verifyPath && !resetPath && location.pathname === '/about') return <AboutView publicEntry />
   if (!session && !approvalPath && !verifyPath && !resetPath) return <AuthView onEnter={enter} />
   if (!session) return routes
 
