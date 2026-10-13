@@ -229,6 +229,68 @@ const people = [
   },
 ];
 
+const MALE_NAMES = ['אברהם', 'יצחק', 'יעקב', 'משה', 'אהרן', 'דוד', 'יוסף', 'שמעון', 'בנימין', 'נפתלי', 'אשר', 'זאב', 'חיים', 'פנחס', 'אליהו', 'מרדכי', 'ברוך', 'גרשון', 'יהודה', 'ראובן', 'לוי', 'ישראל', 'נחמן', 'מנחם', 'שניאור', 'יחיאל', 'חנוך', 'דב', 'אריה', 'נתן', 'עקיבא', 'הלל', 'מאיר', 'רפאל', 'שלום', 'ציון', 'אביחי', 'יונתן', 'נריה', 'אלי', 'עמית', 'איתי', 'נועם', 'עידו', 'יאיר', 'אלון', 'רועי', 'גל', 'אורי', 'יובל', 'איתן', 'דניאל', 'אריאל', 'מתן', 'עומר', 'ינאי', 'אורן', 'בועז', 'גד', 'חגי'];
+const FEMALE_NAMES = ['שרה', 'לאה', 'רבקה', 'רחל', 'מרים', 'חנה', 'אסתר', 'דינה', 'תמר', 'יעל', 'נועה', 'מיכל', 'שירה', 'הדסה', 'מלכה', 'ברכה', 'פייגה', 'הינדא', 'חיה', 'גיטל', 'דבורה', 'יהודית', 'ציפורה', 'אביגיל', 'הילה', 'מאיה', 'תהילה', 'עדי', 'נעמה', 'הודיה', 'אורה', 'זהבה', 'שמחה', 'פנינה', 'שושנה', 'ורד', 'יפה', 'מרגלית', 'אסנת', 'הדר', 'ליאת', 'סיגל', 'אורית', 'מוריה', 'רות', 'נעמי', 'אביטל', 'חוה', 'צביה', 'אהובה', 'ברוריה', 'ביילא', 'גולדה', 'פרידה', 'מינה', 'אלטע', 'שיינא', 'רייזל', 'בלומא', 'חנה'];
+const LAST_NAMES = ['לוי', 'כהן', 'ברקוביץ', 'פרידמן', 'אזולאי', 'הורוביץ', 'ביטון', 'קליין', 'מזרחי', 'שטיין', 'גולדשמידט', 'אברמוביץ', 'רוזנברג', 'שוורץ', 'גרינברג', 'וייס', 'כץ', 'סגל', 'הלפרין', 'אוחיון', 'אלפסי', 'טולדנו', 'אמסלם', 'חדד', 'סופר', 'גרוס', 'ברגר', 'פישר', 'נחמני', 'אדלר', 'בלוי', 'דויטש', 'יעקבי', 'מלמד', 'פרץ', 'אוחנה', 'גבאי', 'עמר', 'מרציאנו', 'אסולין', 'דיין', 'חזן', 'אלבז', 'שטרן', 'גולדברג', 'רוזן', 'קפלן', 'מנדל', 'סבג', 'דהן'];
+const CITIES = ['ירושלים', 'בני ברק', 'אשדוד', 'בית שמש', 'מודיעין עילית', 'אלעד', 'נתיבות', 'פתח תקווה', 'חיפה', 'צפת', 'ביתר עילית', 'תל אביב'];
+const EXTRA_LANGUAGES = ['אנגלית', 'צרפתית', 'רוסית', 'ספרדית'];
+const MALE_EDUCATION = ['ישיבה', 'כולל', 'הכשרה מקצועית', 'לימודים אקדמאים', 'ללא מסגרת'];
+const FEMALE_EDUCATION = ['סמינר', 'הכשרה מקצועית', 'לימודים אקדמאים', 'ללא מסגרת'];
+const MALE_LIFESTYLE = ['לימוד מלא', 'לימוד ועבודה', 'עבודה וקביעות עיתים', 'עבודה'];
+const FEMALE_LIFESTYLE = ['לימוד ועבודה', 'עבודה'];
+
+function buildPool() {
+  const sectors = ['חסידי', 'ליטאי', 'ספרדי', 'חבד', 'חרדי מודרני', 'אחר'];
+  const ages = [];
+  for (let age = 18; age <= 80; age += 1) ages.push(age);
+
+  const pool = [];
+  let index = 0;
+  for (const sector of sectors) {
+    for (const gender of ['Male', 'Female']) {
+      const firstNames = gender === 'Male' ? MALE_NAMES : FEMALE_NAMES;
+      const educations = gender === 'Male' ? MALE_EDUCATION : FEMALE_EDUCATION;
+      const lifestyles = gender === 'Male' ? MALE_LIFESTYLE : FEMALE_LIFESTYLE;
+      ages.forEach((age, ageIndex) => {
+        const firstName = firstNames[index % firstNames.length];
+        const lastName = LAST_NAMES[(index * 3 + ageIndex) % LAST_NAMES.length];
+        const city = CITIES[(index + ageIndex) % CITIES.length];
+        const education = educations[ageIndex % educations.length];
+        const lifestyle = lifestyles[ageIndex % lifestyles.length];
+        const extra = EXTRA_LANGUAGES[index % EXTRA_LANGUAGES.length];
+        const sectorKey = sectors.indexOf(sector);
+        pool.push({
+          email: `pool.${gender === 'Male' ? 'm' : 'f'}.${sectorKey}.${age}@matchpoint.test`,
+          firstName,
+          lastName,
+          gender,
+          sector,
+          age,
+          city,
+          languages: ['עברית', extra],
+          education,
+          lifestyle,
+          description: `${firstName} ${lastName} מ${city}, במגזר ${sector}. ${gender === 'Male' ? 'הוא' : 'היא'} ${education === 'ללא מסגרת' ? 'בלי מסגרת קבועה' : `ב${education}`} ובסדר יום של ${lifestyle}.`,
+          preferences: {
+            gender: gender === 'Male' ? 'Female' : 'Male',
+            sector: 'אחר',
+            ageRange: { min: 18, max: 120 },
+            cities: [],
+            languages: [],
+            education: 'ללא מסגרת',
+            lifestyle: gender === 'Male' ? 'עבודה' : 'לימוד מלא',
+            additionalCriteria: {},
+          },
+        });
+        index += 1;
+      });
+    }
+  }
+  return pool;
+}
+
+people.push(...buildPool());
+
 function buildDocuments(passwordHash, matchmakerDocs) {
   const users = [];
   const profiles = [];
@@ -286,29 +348,45 @@ async function seed() {
   await connectDb(uri);
   const db = getDb();
 
-  await Promise.all([
-    db.collection('matchmakers').deleteMany({}),
-    db.collection('users').deleteMany({}),
-    db.collection('profiles').deleteMany({}),
-    db.collection('preferences').deleteMany({}),
-  ]);
+  const demoUsers = await db.collection('users').find({ email: /@matchpoint\.test$/i }).project({ _id: 1 }).toArray();
+  const demoIds = demoUsers.map((user) => user._id);
+  if (demoIds.length > 0) {
+    await Promise.all([
+      db.collection('users').deleteMany({ _id: { $in: demoIds } }),
+      db.collection('profiles').deleteMany({ userId: { $in: demoIds } }),
+      db.collection('preferences').deleteMany({ userId: { $in: demoIds } }),
+      db.collection('matches').deleteMany({ $or: [{ userId: { $in: demoIds } }, { candidateId: { $in: demoIds } }] }),
+      db.collection('engagements').deleteMany({ $or: [{ maleId: { $in: demoIds } }, { femaleId: { $in: demoIds } }] }),
+    ]);
+  }
 
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, SALT_ROUNDS);
-  const matchmakerDocs = matchmakers.map((item) => ({
-    ...matchmakerSchema.parse(item),
-    _id: new ObjectId(),
-  }));
+  const matchmakerDocs = [];
+  for (const item of matchmakers) {
+    const parsed = matchmakerSchema.parse(item);
+    const existing = await db.collection('matchmakers').findOne({ email: parsed.email });
+    if (existing) {
+      await db.collection('matchmakers').updateOne(
+        { _id: existing._id },
+        { $set: { name: parsed.name, phone: parsed.phone, email: parsed.email } },
+      );
+      matchmakerDocs.push(existing);
+    } else {
+      const created = { ...parsed, _id: new ObjectId() };
+      await db.collection('matchmakers').insertOne(created);
+      matchmakerDocs.push(created);
+    }
+  }
   const documents = buildDocuments(passwordHash, matchmakerDocs);
 
-  await db.collection('matchmakers').insertMany(matchmakerDocs);
   await db.collection('users').insertMany(documents.users);
   await db.collection('profiles').insertMany(documents.profiles);
   await db.collection('preferences').insertMany(documents.preferences);
 
-  console.log('Seed completed.');
-  console.log(`Default password: ${DEFAULT_PASSWORD}`);
-  console.log('Test accounts:');
-  people.forEach((person) => {
+  console.log(`Seed completed. Demo profiles: ${people.length}`);
+  console.log(`Default password for demo accounts: ${DEFAULT_PASSWORD}`);
+  console.log('Sample accounts:');
+  people.slice(0, 8).forEach((person) => {
     console.log(`- ${person.email} (${person.firstName} ${person.lastName}, ${person.sector})`);
   });
 }

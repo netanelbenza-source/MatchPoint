@@ -13,6 +13,7 @@ async function replacePendingUser(user) {
     role: user.role || 'user',
     status: user.status || 'active',
     verificationToken: user.verificationToken,
+    verificationCode: user.verificationCode,
     createdAt: new Date(),
   };
   await pendingUsers().deleteMany({ email: doc.email });
@@ -24,6 +25,10 @@ async function claimPendingUser(token) {
   return pendingUsers().findOneAndDelete({ verificationToken: token });
 }
 
+async function claimPendingUserByCode(email, code) {
+  return pendingUsers().findOneAndDelete({ email, verificationCode: code });
+}
+
 async function deletePendingUser(id) {
   const result = await pendingUsers().deleteOne({ _id: id });
   return result.deletedCount === 1;
@@ -32,5 +37,6 @@ async function deletePendingUser(id) {
 module.exports = {
   replacePendingUser,
   claimPendingUser,
+  claimPendingUserByCode,
   deletePendingUser,
 };

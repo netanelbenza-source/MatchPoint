@@ -10,9 +10,15 @@ const loginSchema = z.object({
   password: z.string().min(1).max(72),
 });
 
-const verifyEmailSchema = z.object({
-  token: z.string().trim().min(1),
-});
+const verifyEmailSchema = z.union([
+  z.object({
+    token: z.string().trim().min(1),
+  }),
+  z.object({
+    email: z.string().trim().email().toLowerCase(),
+    code: z.string().trim().regex(/^\d{6}$/),
+  }),
+]);
 
 const forgotPasswordSchema = z.object({
   email: z.string().trim().email().toLowerCase(),

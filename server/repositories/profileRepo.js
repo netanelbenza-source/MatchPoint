@@ -123,12 +123,13 @@ async function deleteProfileByUserId(userId) {
 }
 
 async function getAvailableCandidates() {
-  return profiles()
-    .find(
-      { isAvailable: true, gender: { $in: ['Male', 'Female'] } },
-      { projection: { _id: 0, userId: 1, firstName: 1, lastName: 1, gender: 1, age: 1, city: 1 } }
-    )
-    .toArray();
+  return profiles().aggregate([
+    { $match: { isAvailable: true, gender: { $in: ['Male', 'Female'] } } },
+    { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
+    { $unwind: '$user' },
+    { $match: { 'user.email': { $type: 'string', $ne: '' } } },
+    { $project: { _id: 0, userId: 1, firstName: 1, lastName: 1, gender: 1, age: 1, city: 1 } },
+  ]).toArray();
 }
 
 module.exports = {

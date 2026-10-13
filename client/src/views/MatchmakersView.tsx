@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api, ApiError, readSession } from '../lib/api'
 import { useI18n } from '../lib/i18n'
 import type { Matchmaker, Session } from '../lib/types'
+import { MatchmakerOfTheWeek } from '../components/MatchmakerOfTheWeek'
 import { Field, Notice, SectionTitle } from '../components/ui'
 
 const STORAGE_KEY = 'matchpoint-token'
@@ -56,6 +57,9 @@ export function MatchmakersView({
   return (
     <section>
       <SectionTitle kicker={tr('שדכנים', 'Matchmakers')} title={tr('מי מייצג את ההתאמה.', 'Who represents the match.')} text={tr('כל פרופיל מקושר לשדכן.', 'Every profile is linked to a matchmaker.')} />
+      <div className="mb-6 max-w-md">
+        <MatchmakerOfTheWeek />
+      </div>
       <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
         <div className="grid gap-3">
           {people.map((person) => (

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const { registerSchema, loginSchema, verifyEmailSchema, forgotPasswordSchema, resetPasswordSchema } = require('../validations/authValidation');
 const { normalizeRole } = require('../validations/userValidation');
 const { insertUser, getUserById, getUserByEmail, getUserByEmailWithPassword, updateUser, setPasswordReset, resetPasswordWithToken } = require('../repositories/userRepo');
-const { replacePendingUser, claimPendingUser, deletePendingUser } = require('../repositories/pendingUserRepo');
+const { replacePendingUser, claimPendingUser, claimPendingUserByCode, deletePendingUser } = require('../repositories/pendingUserRepo');
 const { getMatchmakerByEmail } = require('../repositories/matchmakerRepo');
 const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/mailService');
 const { sendValidationError, sendWriteError } = require('./errors');
@@ -51,18 +51,21 @@ async function register(req, res) {
 
     const passwordHash = await bcrypt.hash(parsed.data.password, SALT_ROUNDS);
     const verificationToken = crypto.randomBytes(20).toString('hex');
+    const verificationCode = String(crypto.randomInt(100000, 1000000));
     const pending = await replacePendingUser({
       email: parsed.data.email,
       passwordHash,
       role: 'user',
       status: 'active',
       verificationToken,
+      verificationCode,
     });
 
     try {
       const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
       await sendVerificationEmail({
         to: pending.email,
+        code: verificationCode,
         verifyUrl: `${clientUrl}/verify-email/${verificationToken}`,
       });
     } catch (error) {
@@ -169,19 +172,23 @@ async function verifyEmail(req, res) {
   if (!parsed.success) return sendValidationError(res, parsed.error);
 
   try {
-    const pending = await claimPendingUser(parsed.data.token);
+    const pending = parsed.data.token
+      ? await claimPendingUser(parsed.data.token)
+      : await claimPendingUserByCode(parsed.data.email, parsed.data.code);
     if (!pending) {
-      return res.status(400).json({ message: 'Invalid or expired token' });
+      return res.status(400).json({ message: 'הקוד או הקישור לא תקינים.' });
     }
 
-    delete pending.verificationToken;
-    delete pending.createdAt;
-    delete pending._id;
+    const snapshot = { ...pending };
+    delete snapshot.verificationToken;
+    delete snapshot.verificationCode;
+    delete snapshot.createdAt;
+    delete snapshot._id;
 
     try {
-      await insertUser(pending);
+      await insertUser(snapshot);
     } catch (error) {
-      await replacePendingUser({ ...pending, verificationToken: parsed.data.token });
+      await replacePendingUser(pending);
       throw error;
     }
 

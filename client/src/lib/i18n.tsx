@@ -41,6 +41,14 @@ const API_EN: Record<string, string> = {
   'אין רשומת שדכן עם האימייל של החשבון הזה': 'No matchmaker record matches this account email.',
   'הבחור שנבחר לא זמין': 'The selected man is not available.',
   'הבחורה שנבחרה לא זמינה': 'The selected woman is not available.',
+  'הבחור שנבחר לא מקושר לחשבון משתמש, ולכן אי אפשר לשלוח לו אישור.': 'The selected man is not linked to a user account, so an approval cannot be sent.',
+  'הבחורה שנבחרה לא מקושרת לחשבון משתמש, ולכן אי אפשר לשלוח לה אישור.': 'The selected woman is not linked to a user account, so an approval cannot be sent.',
+  'הבחור שנבחר לא תואם את השדה שנבחר.': 'The selected man does not match that field.',
+  'הבחורה שנבחרה לא תואמת את השדה שנבחר.': 'The selected woman does not match that field.',
+  'הבחור שנבחר בלי כתובת אימייל, ולכן אי אפשר לשלוח לו אישור.': 'The selected man has no email address, so an approval cannot be sent.',
+  'הבחורה שנבחרה בלי כתובת אימייל, ולכן אי אפשר לשלוח לה אישור.': 'The selected woman has no email address, so an approval cannot be sent.',
+  'אי אפשר לשלוח אישור שידוך לחשבון של השדכן. לכל צד צריך אימייל משלו.': 'An engagement approval cannot be sent to the matchmaker account. Each side needs their own email.',
+  'לאחד הצדדים אין אימייל אמיתי, ולכן האישור לא נשלח.': 'One side has no real email address, so the approval was not sent.',
   'כבר נשלחה בקשת אישור פתוחה לזוג הזה': 'An open approval request already exists for this pair.',
   'לא נוצרו שני קישורי אישור נפרדים': 'Two separate approval links were not created.',
   'הבקשה לא נמצאה': 'The request was not found.',
@@ -56,6 +64,9 @@ const API_EN: Record<string, string> = {
   'הפרטים נשלחו לשדכן': 'Your details were sent to the matchmaker.',
   'הבקשה נכשלה': 'The request failed.',
   'Invalid or expired token': 'Invalid or expired token.',
+  'הקוד או הקישור לא תקינים.': 'The code or link is not valid.',
+  'קודם ממלאים פרופיל.': 'Fill in a profile first.',
+  'המגדר המבוקש חייב להיות המגדר ההפוך מהפרופיל.': 'The requested gender must be the opposite of the profile gender.',
 }
 
 function labelOf(value: string, lang: Lang) {

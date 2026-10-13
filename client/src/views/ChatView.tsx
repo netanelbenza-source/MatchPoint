@@ -35,7 +35,7 @@ export function ChatView({ session }: { session: Session }) {
     <section>
       <SectionTitle
         kicker={tr('עוזר', 'Assistant')}
-        title={tr('תאר במילים, לא בתיבות.', 'Describe it in words, not boxes.')}
+        title={tr('שיחה עם העוזר למציאת התאמה.', 'A conversation with the assistant to find a match.')}
         text={tr('המערכת כבר מסננת מגדר, מגזר וזמינות. ג׳מיני קורא רק את התיאורים החופשיים ומחזיר עד שלוש התאמות.', 'The system already filters gender, community, and availability. Gemini reads only the free descriptions and returns up to three matches.')}
       />
       <form className="panel rounded-[2rem] p-6 sm:p-8" onSubmit={submit}>

@@ -4,14 +4,26 @@ const {
 } = require('../validations/preferencesValidation');
 const { objectIdSchema } = require('../validations/objectId');
 const preferencesRepo = require('../repositories/preferencesRepo');
+const { getProfileByUserId } = require('../repositories/profileRepo');
 const { isOwnerOrAdmin } = require('../middlewares/adminMiddleware');
 const { sendValidationError, sendWriteError } = require('./errors');
+
+async function oppositeGenderError(userId, gender) {
+  const profile = await getProfileByUserId(userId);
+  if (!profile) return 'קודם ממלאים פרופיל.';
+  const opposite = profile.gender === 'Male' ? 'Female' : 'Male';
+  if (gender !== opposite) return 'המגדר המבוקש חייב להיות המגדר ההפוך מהפרופיל.';
+  return '';
+}
 
 async function createPreferences(req, res) {
   const parsed = preferencesCreateSchema.safeParse(req.body);
   if (!parsed.success) return sendValidationError(res, parsed.error);
 
   try {
+    const genderError = await oppositeGenderError(parsed.data.userId, parsed.data.gender);
+    if (genderError) return res.status(400).json({ message: genderError });
+
     const preferences = await preferencesRepo.insertPreferences(parsed.data);
     return res.status(201).json(preferences);
   } catch (error) {
@@ -57,6 +69,11 @@ async function updatePreferences(req, res) {
     if (!existing) return res.status(404).json({ message: 'Preferences not found' });
     if (!isOwnerOrAdmin(req, existing.userId)) {
       return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    if (bodyParsed.data.gender) {
+      const genderError = await oppositeGenderError(existing.userId, bodyParsed.data.gender);
+      if (genderError) return res.status(400).json({ message: genderError });
     }
 
     const preferences = await preferencesRepo.updatePreferences(idParsed.data, bodyParsed.data);

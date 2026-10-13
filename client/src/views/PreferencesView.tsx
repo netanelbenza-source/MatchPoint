@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../lib/api'
 import { useI18n } from '../lib/i18n'
-import { educationForSoughtGender, GENDERS, LANGUAGES, lifestyleForSoughtGender, SECTORS } from '../lib/options'
-import type { Preferences, Session } from '../lib/types'
+import { educationForSoughtGender, LANGUAGES, lifestyleForSoughtGender, SECTORS } from '../lib/options'
+import type { Preferences, Profile, Session } from '../lib/types'
 import { Chips, Field, Notice, SectionTitle } from '../components/ui'
 
 const empty = {
@@ -31,29 +31,47 @@ export function PreferencesView({ session }: { session: Session }) {
   const navigate = useNavigate()
   const [form, setForm] = useState(empty)
   const [recordId, setRecordId] = useState<string | null>(null)
+  const [profileGender, setProfileGender] = useState<'Male' | 'Female' | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const soughtGender = profileGender === 'Male' ? 'Female' : profileGender === 'Female' ? 'Male' : null
 
   useEffect(() => {
     let active = true
-    api<Preferences>(`/api/preferences/user/${session.userId}`, session)
-      .then((record) => {
+    async function load() {
+      let profile: Profile
+      try {
+        profile = await api<Profile>(`/api/profiles/user/${session.userId}`, session)
+      } catch (caught) {
+        if (caught instanceof ApiError && caught.status === 404) return
+        if (active) setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed'))
+        return
+      }
+      if (!active) return
+      const sought = profile.gender === 'Male' ? 'Female' : 'Male'
+      setProfileGender(profile.gender)
+      try {
+        const record = await api<Preferences>(`/api/preferences/user/${session.userId}`, session)
         if (!active) return
         setRecordId(record._id)
         setForm({
-          gender: record.gender,
+          gender: sought,
           sector: record.sector,
           min: record.ageRange.min,
           max: record.ageRange.max,
           cities: (record.cities ?? []).join(', '),
           languages: record.languages ?? [],
-          ...fitSoughtOptions(record.gender, record.education, record.lifestyle),
+          ...fitSoughtOptions(sought, record.education, record.lifestyle),
         })
-      })
-      .catch((caught) => {
-        if (caught instanceof ApiError && caught.status === 404) return
+      } catch (caught) {
+        if (caught instanceof ApiError && caught.status === 404) {
+          setForm({ ...empty, gender: sought, ...fitSoughtOptions(sought, empty.education, empty.lifestyle) })
+          return
+        }
         if (active) setError(caught instanceof Error ? message(caught.message) : tr('טעינה נכשלה', 'Loading failed'))
-      })
+      }
+    }
+    load()
     return () => {
       active = false
     }
@@ -64,7 +82,7 @@ export function PreferencesView({ session }: { session: Session }) {
     setBusy(true)
     setError('')
     const payload = {
-      gender: form.gender,
+      gender: soughtGender ?? form.gender,
       sector: form.sector,
       ageRange: { min: Number(form.min), max: Number(form.max) },
       cities: form.cities.split(',').map((city) => city.trim()).filter(Boolean),
@@ -101,18 +119,11 @@ export function PreferencesView({ session }: { session: Session }) {
       <form className="panel grid gap-5 rounded-[2rem] p-6 sm:p-8" onSubmit={save}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={tr('מגדר מבוקש', 'Requested gender')}>
-            <select
-              value={form.gender}
-              onChange={(event) => {
-                const gender = event.target.value as 'Male' | 'Female'
-                setForm({ ...form, gender, ...fitSoughtOptions(gender, form.education, form.lifestyle) })
-              }}
-            >
-              {GENDERS.map((item) => (
-                <option key={item.value} value={item.value}>{label(item.value)}</option>
-              ))}
+            <select value={soughtGender ?? ''} disabled>
+              {soughtGender ? <option value={soughtGender}>{label(soughtGender)}</option> : null}
             </select>
           </Field>
+          {profileGender ? null : <p className="text-sm text-ink sm:col-span-2">{tr('קודם מלאו מגדר בפרופיל. אחר כך יופיע כאן רק המגדר ההפוך.', 'Fill in a gender on your profile first. Then only the opposite gender appears here.')}</p>}
           <Field label={tr('מגזר מבוקש', 'Requested community')}>
             <select value={form.sector} onChange={(event) => setForm({ ...form, sector: event.target.value })}>
               {SECTORS.map((item) => (
@@ -148,7 +159,7 @@ export function PreferencesView({ session }: { session: Session }) {
           <Chips options={LANGUAGES} value={form.languages} onChange={(languages) => setForm({ ...form, languages })} />
         </Field>
         {error ? <Notice>{error}</Notice> : null}
-        <button className="btn btn-primary w-fit" disabled={busy}>{busy ? tr('שומר...', 'Saving...') : recordId ? tr('עדכון חיפוש', 'Update search') : tr('שמירת חיפוש', 'Save search')}</button>
+        <button className="btn btn-primary w-fit" disabled={busy || !soughtGender}>{busy ? tr('שומר...', 'Saving...') : recordId ? tr('עדכון חיפוש', 'Update search') : tr('שמירת חיפוש', 'Save search')}</button>
       </form>
     </section>
   )

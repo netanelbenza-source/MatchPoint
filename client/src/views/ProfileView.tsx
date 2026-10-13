@@ -98,7 +98,7 @@ export function ProfileView({ session }: { session: Session }) {
     <section>
       <SectionTitle
         kicker={tr('פרופיל', 'Profile')}
-        title={tr('מי אתה בשידוך.', 'Who you are in a match.')}
+        title={tr('מלאו פרטים על עצמכם.', 'Fill in your own details.')}
         text={tr('הפרטים האלה נבדקים מול ההעדפות של הצד השני. בלי פרופיל אין התאמה.', 'These details are checked against the other side. Without a profile there is no match.')}
       />
       <form className="panel grid gap-5 rounded-[2rem] p-6 sm:p-8" onSubmit={save}>

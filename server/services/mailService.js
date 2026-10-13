@@ -45,8 +45,9 @@ function genderLabel(gender) {
 async function deliver(message) {
   try {
     await createTransport().sendMail({
+      from: `"MatchPoint" <${process.env.SMTP_USER}>`,
+      replyTo: process.env.SMTP_USER,
       ...message,
-      from: process.env.SMTP_USER,
     });
   } catch (error) {
     logSmtpError('send', error);
@@ -96,33 +97,60 @@ function detailLines(profile, preferences, user) {
   ];
 }
 
-async function sendVerificationEmail({ to, verifyUrl }) {
-  const safeUrl = escapeHtml(verifyUrl);
+function ltrLink(url) {
+  const safeUrl = escapeHtml(url);
+  return `
+    <p dir="ltr" style="direction:ltr;text-align:left;margin:16px 0;">
+      <a href="${safeUrl}" style="color:#163a73;word-break:break-all;">${safeUrl}</a>
+    </p>
+  `;
+}
+
+async function sendVerificationEmail({ to, code, verifyUrl }) {
   await deliver({
     to,
-    subject: 'אימות כתובת האימייל',
-    text: `כדי להשלים את ההרשמה ל-MatchPoint, פתחו את הקישור:\n${verifyUrl}`,
+    subject: `MatchPoint: קוד ההרשמה ${code}`,
+    text: [
+      'שלום,',
+      '',
+      `קוד ההרשמה שלך ל-MatchPoint הוא ${code}.`,
+      'אפשר להקליד אותו במסך ההרשמה. זה עובד גם באייפון, בלי לפתוח קישור.',
+      '',
+      'אם הקישור נפתח, אפשר גם לאשר דרכו:',
+      verifyUrl,
+      '',
+      'אם לא נרשמת ל-MatchPoint, אפשר להתעלם מההודעה.',
+    ].join('\n'),
     html: `
-      <div dir="rtl" style="font-family:Heebo,Segoe UI,sans-serif;color:#172033;line-height:1.7;">
-        <p>כדי להשלים את ההרשמה ל-MatchPoint, אשרו את כתובת האימייל.</p>
-        <p><a href="${safeUrl}" style="display:inline-block;background:#163a73;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;">אימות האימייל</a></p>
-        <p style="font-size:14px;color:#667085;">${safeUrl}</p>
+      <div dir="rtl" style="font-family:Arial,sans-serif;color:#172033;line-height:1.7;">
+        <p>שלום,</p>
+        <p>קוד ההרשמה שלך ל-MatchPoint הוא:</p>
+        <p dir="ltr" style="direction:ltr;font-size:32px;letter-spacing:8px;font-weight:700;margin:12px 0;">${escapeHtml(code)}</p>
+        <p>אפשר להקליד אותו במסך ההרשמה. זה עובד גם באייפון, בלי לפתוח קישור.</p>
+        <p>אם הקישור נפתח, אפשר גם לאשר דרכו:</p>
+        ${ltrLink(verifyUrl)}
+        <p style="font-size:14px;color:#667085;">אם לא נרשמת ל-MatchPoint, אפשר להתעלם מההודעה.</p>
       </div>
     `,
   });
 }
 
 async function sendPasswordResetEmail({ to, resetUrl }) {
-  const safeUrl = escapeHtml(resetUrl);
   await deliver({
     to,
-    subject: 'איפוס סיסמה',
-    text: `כדי לבחור סיסמה חדשה ל-MatchPoint, פתחו את הקישור. הוא בתוקף לשעה:\n${resetUrl}`,
+    subject: 'MatchPoint: בחירת סיסמה חדשה',
+    text: [
+      'כדי לבחור סיסמה חדשה ל-MatchPoint, פתחו את הקישור. הוא בתוקף לשעה.',
+      '',
+      resetUrl,
+      '',
+      'אם לא ביקשת איפוס, אפשר להתעלם מההודעה.',
+    ].join('\n'),
     html: `
-      <div dir="rtl" style="font-family:Heebo,Segoe UI,sans-serif;color:#172033;line-height:1.7;">
-        <p>כדי לבחור סיסמה חדשה ל-MatchPoint, לחצו על הקישור. הוא בתוקף לשעה.</p>
-        <p><a href="${safeUrl}" style="display:inline-block;background:#163a73;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;">בחירת סיסמה חדשה</a></p>
-        <p style="font-size:14px;color:#667085;">${safeUrl}</p>
+      <div dir="rtl" style="font-family:Arial,sans-serif;color:#172033;line-height:1.7;">
+        <p>כדי לבחור סיסמה חדשה ל-MatchPoint, פתחו את הקישור. הוא בתוקף לשעה.</p>
+        ${ltrLink(resetUrl)}
+        <p style="font-size:14px;color:#667085;">אם לא ביקשת איפוס, אפשר להתעלם מההודעה.</p>
       </div>
     `,
   });
@@ -158,7 +186,6 @@ async function sendMatchmakerEmail({ matchmaker, candidate, user, profile, prefe
 }
 
 async function sendEngagementApprovalEmail({ to, firstName, matchmakerName, approvalUrl }) {
-  const safeUrl = escapeHtml(approvalUrl);
   const lines = [
     `שלום ${firstName},`,
     '',
@@ -170,15 +197,14 @@ async function sendEngagementApprovalEmail({ to, firstName, matchmakerName, appr
 
   await deliver({
     to,
-    subject: 'אישור שידוך',
+    subject: 'MatchPoint: אישור שידוך',
     text: lines.join('\n'),
     html: `
-      <div dir="rtl" style="font-family:Heebo,Segoe UI,sans-serif;color:#172033;line-height:1.7;">
+      <div dir="rtl" style="font-family:Arial,sans-serif;color:#172033;line-height:1.7;">
         <p>שלום ${escapeHtml(firstName)},</p>
         <p>${escapeHtml(matchmakerName)} ביקש/ה את אישורך לשידוך.</p>
         <p>הקישור מאשר רק את הצד שלך. השידוך נסגר רק אחרי ששני הצדדים מאשרים.</p>
-        <p><a href="${safeUrl}" style="display:inline-block;background:#ff5d78;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;">אישור השידוך</a></p>
-        <p style="font-size:14px;color:#667085;">${safeUrl}</p>
+        ${ltrLink(approvalUrl)}
       </div>
     `,
   });

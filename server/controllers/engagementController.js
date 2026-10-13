@@ -14,6 +14,36 @@ const {
 const { sendEngagementApprovalEmail } = require('../services/mailService');
 const { sendValidationError, sendWriteError } = require('./errors');
 
+function partyBlock(side, profile, user) {
+  const male = side === 'male';
+  if (!profile || !user) {
+    return male
+      ? 'הבחור שנבחר לא מקושר לחשבון משתמש, ולכן אי אפשר לשלוח לו אישור.'
+      : 'הבחורה שנבחרה לא מקושרת לחשבון משתמש, ולכן אי אפשר לשלוח לה אישור.';
+  }
+  if (profile.gender !== (male ? 'Male' : 'Female')) {
+    return male ? 'הבחור שנבחר לא תואם את השדה שנבחר.' : 'הבחורה שנבחרה לא תואמת את השדה שנבחר.';
+  }
+  if (profile.isAvailable !== true) return male ? 'הבחור שנבחר לא זמין' : 'הבחורה שנבחרה לא זמינה';
+  if (!user.email) {
+    return male
+      ? 'הבחור שנבחר בלי כתובת אימייל, ולכן אי אפשר לשלוח לו אישור.'
+      : 'הבחורה שנבחרה בלי כתובת אימייל, ולכן אי אפשר לשלוח לה אישור.';
+  }
+  return '';
+}
+
+function sameEmail(left, right) {
+  return String(left || '').trim().toLowerCase() === String(right || '').trim().toLowerCase();
+}
+
+function recipientProblem(user, matchmakerEmail, actorId) {
+  if (!user?.email) return 'missing';
+  if (String(user._id) === String(actorId) || sameEmail(user.email, matchmakerEmail)) return 'matchmaker';
+  if (sameEmail(user.email.split('@')[1], 'matchpoint.test')) return 'demo';
+  return '';
+}
+
 function approvalUrl(engagementId, userId) {
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
   return `${clientUrl}/approve-engagement/${engagementId}/${userId}`;
@@ -42,7 +72,8 @@ async function removeCandidate(userId) {
 async function listCandidates(req, res) {
   try {
     const records = await getAvailableCandidates();
-    return res.status(200).json(records.map((record) => ({
+    const selfId = String(req.user.userId);
+    return res.status(200).json(records.filter((record) => String(record.userId) !== selfId).map((record) => ({
       userId: String(record.userId),
       firstName: record.firstName,
       lastName: record.lastName || '',
@@ -75,11 +106,17 @@ async function requestEngagement(req, res) {
       getUserById(parsed.data.femaleId),
     ]);
 
-    if (!maleProfile || maleProfile.gender !== 'Male' || maleProfile.isAvailable !== true || !maleUser?.email) {
-      return res.status(400).json({ message: 'הבחור שנבחר לא זמין' });
+    const maleBlock = partyBlock('male', maleProfile, maleUser);
+    if (maleBlock) return res.status(400).json({ message: maleBlock });
+    const femaleBlock = partyBlock('female', femaleProfile, femaleUser);
+    if (femaleBlock) return res.status(400).json({ message: femaleBlock });
+
+    const problems = [maleUser, femaleUser].map((user) => recipientProblem(user, matchmaker.email, actor._id));
+    if (problems.includes('matchmaker')) {
+      return res.status(400).json({ message: 'אי אפשר לשלוח אישור שידוך לחשבון של השדכן. לכל צד צריך אימייל משלו.' });
     }
-    if (!femaleProfile || femaleProfile.gender !== 'Female' || femaleProfile.isAvailable !== true || !femaleUser?.email) {
-      return res.status(400).json({ message: 'הבחורה שנבחרה לא זמינה' });
+    if (problems.some(Boolean)) {
+      return res.status(400).json({ message: 'לאחד הצדדים אין אימייל אמיתי, ולכן האישור לא נשלח.' });
     }
 
     const existing = await findPendingEngagement(parsed.data.maleId, parsed.data.femaleId);
