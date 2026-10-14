@@ -22,7 +22,7 @@ export function AboutView({ publicEntry = false }: { publicEntry?: boolean }) {
     <video
       ref={videoRef}
       className="w-full rounded-[2rem] bg-navy"
-      src="/about.mp4"
+      src="/about.mp4?v=2"
       autoPlay
       playsInline
       controls
