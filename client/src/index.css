@@ -24,6 +24,8 @@
 
 html {
   background: #f6f8fc;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -49,6 +51,12 @@ input,
 select,
 textarea {
   font-family: inherit;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
 }
 
 html,
@@ -90,6 +98,14 @@ textarea {
   box-shadow: var(--shadow-card);
   padding: 1.35rem 1.5rem 1.5rem;
   backdrop-filter: blur(12px);
+}
+
+@media (max-width: 640px) {
+  .page-copy,
+  .glass-copy {
+    padding: 1rem;
+    border-radius: 1.25rem;
+  }
 }
 
 .glass-copy {

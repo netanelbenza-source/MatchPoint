@@ -22,7 +22,7 @@ export function AppShell({
         onToggleAvailability={onToggleAvailability}
         onLogout={onLogout}
       />
-      <main className="mx-auto max-w-6xl px-4 pb-16 pt-40 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 pb-[max(4rem,env(safe-area-inset-bottom))] pt-32 sm:px-6 sm:pt-40">{children}</main>
     </div>
   )
 }

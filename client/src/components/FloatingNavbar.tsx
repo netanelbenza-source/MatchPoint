@@ -13,8 +13,8 @@ export type NavItem = {
 
 export function Brand({ large = false }: { large?: boolean }) {
   return (
-    <span className={cn('flex items-center font-black tracking-tight text-navy', large ? 'gap-3 text-4xl' : 'gap-3 text-[1.65rem]')}>
-      <svg width={large ? 44 : 36} height={large ? 28 : 22} viewBox="0 0 28 18" aria-hidden="true">
+    <span className={cn('flex min-w-0 items-center font-black tracking-tight text-navy', large ? 'gap-2 text-2xl sm:gap-3 sm:text-4xl' : 'gap-2 text-xl sm:gap-3 sm:text-[1.65rem]')}>
+      <svg className={large ? 'h-5 w-8 shrink-0 sm:h-7 sm:w-11' : 'h-5 w-7 shrink-0 sm:h-[22px] sm:w-9'} viewBox="0 0 28 18" aria-hidden="true">
         <path d="M2 12c4-7 8-7 12 0" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
         <path d="M14 12c4-7 8-7 12 0" fill="none" stroke="#c4a36a" strokeWidth="2.2" strokeLinecap="round" />
       </svg>
@@ -38,7 +38,7 @@ export function FloatingNavbar({
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="fixed inset-x-0 top-4 z-50 px-3 sm:px-4">
+    <div className="fixed inset-x-0 z-50 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4">
       <motion.nav
         initial={{ y: -18, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -63,13 +63,13 @@ export function FloatingNavbar({
               </NavLink>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {available !== null ? (
-              <button type="button" className="btn btn-ghost inline-flex shrink-0 px-3 py-2 text-sm" onClick={onToggleAvailability}>
+              <button type="button" className="btn btn-ghost hidden shrink-0 px-3 py-2 text-sm lg:inline-flex" onClick={onToggleAvailability}>
                 {available ? tr('פנוי', 'Available') : tr('לא פנוי', 'Unavailable')}
               </button>
             ) : null}
-            <button type="button" className="btn btn-primary inline-flex items-center gap-2 px-4 py-2 text-sm" onClick={onLogout}>
+            <button type="button" className="btn btn-primary hidden items-center gap-2 px-4 py-2 text-sm lg:inline-flex" onClick={onLogout}>
               <LogOut size={16} />
               {tr('יציאה', 'Log out')}
             </button>
@@ -97,12 +97,15 @@ export function FloatingNavbar({
                 to={item.to}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  cn('rounded-full px-4 py-2 text-sm font-bold', isActive ? 'bg-navy text-white' : 'text-navy')
+                  cn('rounded-full px-4 py-3 text-sm font-bold', isActive ? 'bg-navy text-white' : 'text-navy')
                 }
               >
                 {item.label}
               </NavLink>
             ))}
+            <button type="button" className="rounded-full px-4 py-3 text-start text-sm font-bold text-navy" onClick={onLogout}>
+              {tr('יציאה', 'Log out')}
+            </button>
           </div>
         ) : null}
       </motion.nav>

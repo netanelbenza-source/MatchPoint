@@ -43,7 +43,7 @@ export function PeopleView({ session }: { session: Session }) {
                     .filter(Boolean)
                     .join(' · ')}
                 </p>
-                {person.email ? <p className="mt-1 text-sm">{person.email}</p> : null}
+                {person.email ? <p className="mt-1 break-all text-sm">{person.email}</p> : null}
               </div>
             </article>
           )

@@ -40,13 +40,13 @@ export function ChatView({ session }: { session: Session }) {
       />
       <form className="panel rounded-[2rem] p-6 sm:p-8" onSubmit={submit}>
         <textarea
-          className="min-h-36 w-full resize-y rounded-3xl border border-[var(--color-line)] bg-white p-4 outline-none focus:border-[var(--color-gold)]"
+          className="min-h-36 w-full resize-y rounded-3xl border border-[var(--color-line)] bg-white p-4 text-base outline-none focus:border-[var(--color-gold)]"
           value={chatMessage}
           onChange={(event) => setChatMessage(event.target.value)}
           placeholder={tr('למשל: מישהי רגועה, לומדת, ופתוחה לגור מחוץ למרכז', 'For example: someone calm, studying, and open to living outside the center')}
           required
         />
-        <button className="btn btn-primary mt-4" disabled={busy}>{busy ? tr('קורא תיאורים...', 'Reading descriptions...') : tr('חיפוש לפי השיחה', 'Search from the conversation')}</button>
+        <button className="btn btn-primary mt-4 w-full sm:w-auto" disabled={busy}>{busy ? tr('קורא תיאורים...', 'Reading descriptions...') : tr('חיפוש לפי השיחה', 'Search from the conversation')}</button>
       </form>
       {error ? <div className="mt-5"><Notice>{error}</Notice></div> : null}
       {asked && !busy && !error && matches.length === 0 ? (
@@ -55,9 +55,9 @@ export function ChatView({ session }: { session: Session }) {
       <div className="mt-6 grid gap-4">
         {matches.map((match) => (
           <article key={match.id} className="panel rounded-[1.7rem] p-6">
-            <div className="flex items-baseline justify-between gap-4">
-              <h2 className="display text-3xl">{match.firstName}</h2>
-              <p className="display text-3xl text-[var(--color-wine)]">{match.matchPercentage}</p>
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="display text-2xl sm:text-3xl">{match.firstName}</h2>
+              <p className="display text-2xl text-[var(--color-wine)] sm:text-3xl">{match.matchPercentage}</p>
             </div>
             <p className="mt-3 leading-7">{match.explanation}</p>
           </article>

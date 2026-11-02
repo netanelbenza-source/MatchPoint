@@ -28,7 +28,7 @@ export function MatchmakerOfTheWeek() {
     <article className="rounded-2xl border border-coral/40 bg-white/85 px-5 py-4 shadow-sm backdrop-blur-sm">
       <p className="text-xs font-bold text-coral">{tr('שדכן השבוע', 'Matchmaker of the week')}</p>
       <h2 className="mt-1 text-lg font-semibold text-navy">{matchmaker.name}</h2>
-      <p className="mt-1 text-sm text-muted">
+      <p className="mt-1 break-all text-sm text-muted">
         {matchmaker.phone}
         {matchmaker.email ? ` · ${matchmaker.email}` : ''}
       </p>

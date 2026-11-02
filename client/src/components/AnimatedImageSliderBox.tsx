@@ -22,7 +22,7 @@ export function AnimatedImageSliderBox() {
   const slide = SLIDES[index]
 
   return (
-    <article className="relative mx-auto h-96 w-80 sm:h-[26rem] sm:w-96">
+    <article className="relative mx-auto h-80 w-full max-w-80 sm:h-[26rem] sm:max-w-96">
       <AnimatePresence>
         <motion.div
           key={slide.src}

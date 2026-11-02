@@ -75,17 +75,17 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
 
   return (
     <div className="relative min-h-screen">
-      <header className="fixed inset-x-0 top-4 z-40 px-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/80 bg-white/80 px-5 py-3.5 shadow-card backdrop-blur-xl sm:px-7">
-          <Brand large />
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <Link to="/about" className="rounded-full px-4 py-2 text-sm font-bold text-navy">
+      <header className="fixed inset-x-0 z-40 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-4">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 rounded-3xl border border-white/80 bg-white/80 px-3 py-2.5 shadow-card backdrop-blur-xl sm:rounded-full sm:px-7 sm:py-3.5">
+          <Brand />
+          <div className="flex flex-wrap items-center justify-end gap-1">
+            <LanguageToggle className="px-3 py-2" />
+            <Link to="/about" className="rounded-full px-3 py-2 text-sm font-bold text-navy">
               {tr('אודותינו', 'About us')}
             </Link>
             <button
               type="button"
-              className={cn('rounded-full px-4 py-2 text-sm font-bold', mode === 'register' ? 'bg-navy text-white' : 'text-navy')}
+              className={cn('rounded-full px-3 py-2 text-sm font-bold', mode === 'register' ? 'bg-navy text-white' : 'text-navy')}
               onClick={() => { setMode('register'); setError(''); setNotice('') }}
             >
               {tr('הרשמה', 'Sign up')}
@@ -93,7 +93,7 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
             <button
               type="button"
               className={cn(
-                'rounded-full px-4 py-2 text-sm font-bold shadow-sm',
+                'rounded-full px-3 py-2 text-sm font-bold shadow-sm',
                 mode === 'login' || mode === 'forgot' || mode === 'code' ? 'bg-white text-navy ring-1 ring-navy/10' : 'text-navy',
               )}
               onClick={() => { setMode('login'); setError(''); setNotice('') }}
@@ -104,7 +104,7 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
         </div>
       </header>
 
-      <main className="mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 pb-16 pt-40 lg:grid-cols-2">
+      <main className="mx-auto grid min-h-dvh max-w-6xl items-center gap-8 px-4 pb-[max(4rem,env(safe-area-inset-bottom))] pt-36 sm:pt-40 lg:grid-cols-2">
         <motion.section
           initial={{ opacity: 0, y: 28 }}
           animate={{ opacity: 1, y: 0 }}
@@ -113,7 +113,7 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
         >
           <div className="glass-copy">
             <p className="text-sm font-bold text-coral">MATCHPOINT</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-navy sm:text-5xl">{tr('שנתחיל?', 'Shall we begin?')}</h1>
+            <h1 className="mt-3 text-3xl font-black leading-tight text-navy sm:text-5xl">{tr('שנתחיל?', 'Shall we begin?')}</h1>
             <p className="mt-3 text-lg leading-8 text-ink">{tr('הכנס/י אימייל וסיסמה. ההתאמה נבדקת לשני הצדדים.', 'Enter your email and password. Compatibility is checked both ways.')}</p>
           </div>
           <form className="panel mt-8 grid gap-4 rounded-[2rem] p-6 sm:p-8" onSubmit={submit}>
@@ -181,7 +181,7 @@ export function AuthView({ onEnter }: { onEnter: (session: Session) => void }) {
           initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.08 }}
-          className="order-1 flex w-full justify-center py-6 lg:order-2 lg:min-h-[28rem] lg:items-center"
+          className="order-1 flex w-full justify-center py-2 lg:order-2 lg:min-h-[28rem] lg:items-center lg:py-6"
         >
           <AnimatedImageSliderBox />
         </motion.section>

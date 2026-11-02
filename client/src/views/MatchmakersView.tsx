@@ -66,7 +66,7 @@ export function MatchmakersView({
             <article key={person._id} className="panel flex items-center justify-between gap-4 rounded-[1.5rem] px-5 py-4">
               <div>
                 <h3 className="text-xl font-semibold text-navy">{person.name}</h3>
-                <p className="text-sm text-[var(--color-muted)]">{person.phone} · {person.email}</p>
+                <p className="break-all text-sm text-[var(--color-muted)]">{person.phone} · {person.email}</p>
                 <p className="mt-1 text-sm font-semibold text-coral">{person.successfulMatches ?? 0} {tr('שידוכים', 'matches')}</p>
               </div>
             </article>

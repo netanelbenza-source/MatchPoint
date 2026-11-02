@@ -80,7 +80,7 @@ export function SectionTitle({ kicker, title, text }: { kicker: string; title: s
   return (
     <header className="page-copy mb-10 max-w-3xl">
       <p className="mb-3 text-sm font-bold text-coral">{kicker}</p>
-      <h1 className="display text-4xl leading-tight text-navy sm:text-6xl">{title}</h1>
+      <h1 className="display text-3xl leading-tight text-navy sm:text-6xl">{title}</h1>
       <p className="mt-4 max-w-xl text-lg leading-8 text-ink">{text}</p>
     </header>
   )
